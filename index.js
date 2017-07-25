@@ -12,7 +12,6 @@ function onRequest (request, response) {
 	if(request.method == 'GET' && request.url == '/'){
 		response.writeHead(200, {"Context-Type": "text/html"});
 		fs.createReadStream("./index.html").pipe(response);
-		response.end();
 	}else{
 		send404Response(response);
 	}
