@@ -6,4 +6,4 @@ function onRequest (request, response) {
 	response.write("Here is some data");
 	response.end();
 }
-http.createServer(onRequest).listen(8888);
+http.createServer(onRequest).listen(8080);
