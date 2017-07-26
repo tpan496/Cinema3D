@@ -1,19 +1,13 @@
 var http = require('http');
-var fs = require('fs');
 
-function send404Response(response){
-	response.writeHead(404, {"Context-Type": "text/plain"});
-	response.write("Error 404: Page not found");
-	response.end();
-}
+var server = http.createServer(function(request, response) {
 
-function onRequest (request, response) {
-	console.log('A user made a request' + request.url);
-	if(request.method == 'GET' && request.url == '/'){
-		response.writeHead(200, {"Context-Type": "text/html"});
-		fs.createReadStream("./index.html").pipe(response);
-	}else{
-		send404Response(response);
-	}
-}
-http.createServer(onRequest).listen(process.env.PORT || 1337);
+    response.writeHead(200, {"Content-Type": "text/plain"});
+    response.end("Hello World!");
+
+});
+
+var port = process.env.PORT || 1337;
+server.listen(port);
+
+console.log("Server running at http://localhost:%d", port);

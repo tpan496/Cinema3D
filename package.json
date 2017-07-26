@@ -1,29 +1,14 @@
 {
-  "name": "exp_server",
-  "version": "1.0.0",
-  "description": "experimental server",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express" : "4.13.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tpan496/exp_server.git"
-  },
-  "author": "tpan496",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/tpan496/exp_server/issues"
-  },
-  "homepage": "https://github.com/tpan496/exp_server#readme",
-  "engines": {
-    "node": ">=6.9.1"
-  },
-  "scripts": {
-    "start": "node index.js"
-  }
+    "name": "app-service-hello-world",
+    "description": "Simple Hello World Node.js sample for Azure App Service",
+    "version": "0.0.1",
+    "private": true,
+    "license": "MIT",
+    "author": "Microsoft",
+    "engines": {
+        "node": ">=6.9.1"
+    },
+    "scripts": {
+        "start": "node index.js"
+    }
 }
