@@ -16,4 +16,4 @@ function onRequest (request, response) {
 		send404Response(response);
 	}
 }
-http.createServer(onRequest).listen(process.env.PORT || 8080);
+http.createServer(onRequest).listen(process.env.PORT || 1337);
