@@ -1,21 +1,14 @@
 var mongo = require('mongodb').MongoClient;
 var express = require('express');
-var app = express();
+var app = require('express')();
+var server = require('http').Server(app);
 var port = process.env.PORT || 8080;
 var address = 'mongodb://tpan496:trollNoob971006!@exp-server-shard-00-00-8ecae.mongodb.net:27017,exp-server-shard-00-01-8ecae.mongodb.net:27017,exp-server-shard-00-02-8ecae.mongodb.net:27017/exp-server?ssl=true&replicaSet=exp-server-shard-0&authSource=admin'
 
-var http = require('http'),
-    fs = require('fs'),
-    // NEVER use a Sync function except at start-up!
-    index = fs.readFileSync(__dirname + '/index.html');
+server.listen(port);
+app.use(express.static(__dirname));
 
-// Send index.html to all requests
-var app = http.createServer(function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(index);
-});
-
-var client = require('socket.io').listen(app);
+var client = require('socket.io').listen(server);
 
 mongo.connect(address, function (error, db) {
     if (error) throw error;
@@ -50,5 +43,4 @@ mongo.connect(address, function (error, db) {
     })
 });
 
-app.listen(port);
 console.log("Server running at http://localhost:%d", port);

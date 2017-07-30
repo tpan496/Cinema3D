@@ -14,7 +14,12 @@
             Status: <span>Idle</span>
         </div>
     </div>
-    <script src="http://tpan496.azurewebsites.net/socket.io/socket.io.js">
+    <div class="video">
+        <video width="480" height="320" controls="controls">
+            <source src="video/wow.mp4">
+        </video>
+    </div>
+    <script src="http://127.0.0.1:8080/socket.io/socket.io.js">
         
 </script>
 <script>
@@ -41,7 +46,7 @@
 
         setStatus('Testing...');
         try{
-            var socket = io.connect('http://tpan496.azurewebsites.net/');
+            var socket = io.connect('http://127.0.0.1:8080');
         }catch(e){
             // Set status to warn user
         }
