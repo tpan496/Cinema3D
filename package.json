@@ -12,6 +12,7 @@
         "start": "node index.js"
     },
     "dependencies": {
+        "express": "^4.15.3",
         "mongodb": "^2.2.30",
         "socket.io": "^2.0.3"
     }
