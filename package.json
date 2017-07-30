@@ -10,5 +10,9 @@
     },
     "scripts": {
         "start": "node index.js"
+    },
+    "dependencies": {
+        "mongodb": "^2.2.30",
+        "socket.io": "^2.0.3"
     }
 }
