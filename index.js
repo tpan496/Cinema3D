@@ -1,8 +1,10 @@
 var http = require('http');
 var mongo = require('mongodb').MongoClient;
-var client = require('socket.io').listen(8080).sockets;
+var port = process.env.PORT || 8080;
+var client = require('socket.io').listen(port).sockets;
+var address = 'mongodb://tpan496:trollNoob971006!@exp-server-shard-00-00-8ecae.mongodb.net:27017,exp-server-shard-00-01-8ecae.mongodb.net:27017,exp-server-shard-00-02-8ecae.mongodb.net:27017/exp-server?ssl=true&replicaSet=exp-server-shard-0&authSource=admin'
 
-mongo.connect('mongodb://127.0.0.1/chat', function (error, db) {
+mongo.connect(address, function (error, db) {
     if (error) throw error;
     client.on('connection', function (socket) {
 
@@ -35,14 +37,5 @@ mongo.connect('mongodb://127.0.0.1/chat', function (error, db) {
     })
 });
 
-var server = http.createServer(function (request, response) {
-
-    response.writeHead(200, { "Content-Type": "text/plain" });
-    response.end("Qsy is gay");
-
-});
-
-var port = process.env.PORT || 1337;
-server.listen(port);
 
 console.log("Server running at http://localhost:%d", port);
