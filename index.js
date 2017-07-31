@@ -1,7 +1,7 @@
 var mongo = require('mongodb').MongoClient;
 var express = require('express');
 var app = require('express')();
-var server = require('http').Server(app);
+var server = require('http').createServer(app);
 var port = process.env.PORT || 8080;
 var mongodbAddress = 'mongodb://tpan496:trollNoob971006!@exp-server-shard-00-00-8ecae.mongodb.net:27017,exp-server-shard-00-01-8ecae.mongodb.net:27017,exp-server-shard-00-02-8ecae.mongodb.net:27017/exp-server?ssl=true&replicaSet=exp-server-shard-0&authSource=admin'
 
@@ -9,14 +9,13 @@ var videoHostId;
 var videoHostTime;
 var forceUpdateThreshold = 1;
 
-server.listen(port);
-var io = require('socket.io')(server);
-io.configure(function() {
-    io.set('transports', ['websocket']);
+var socket = require('socket.io')({
+  transports  : [ 'websocket' ]
 });
+server.listen(port);
 app.use(express.static(__dirname));
 
-var client = require('socket.io').listen(server);
+var client = socket.listen(server);
 
 mongo.connect(mongodbAddress, function (error, db) {
     if (error) throw error;
