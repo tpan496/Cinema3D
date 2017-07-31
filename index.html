@@ -48,10 +48,11 @@
         function onYouTubeIframeAPIReady() {
             if (socket != null) {
                 socket.emit('user_youtube_player_status', { status: 1 });
-                console.log('loaded');
+                console.log('Youtube player loaded');
             }
         };
 
+        // Repeatedly send local video progress
         function sendVideoProgress() {
             if (playerIsReady) {
                 if (socket !== undefined) {
@@ -63,6 +64,7 @@
                 }, 1000);
             }
         };
+
         function onPlayerReady(event) {
             event.target.playVideo();
             playerIsReady = true;
@@ -75,6 +77,7 @@
                 done = true;
             }
         }
+
         function stopVideo() {
             player.stopVideo();
         }
@@ -109,7 +112,7 @@
             if (socket != undefined) {
                 console.log('ok');
                 
-                // Listen for output for chat
+                // Listen for new chat message
                 socket.on('new_chat_message', function (payload) {
                     if (payload.length) {
                         // Loop through messages
@@ -125,7 +128,7 @@
                     }
                 });
 
-                // Listen for output for video
+                // Listen for new video url
                 socket.on('new_video_url', function (payload) {
                     if (payload.length) {
                         // Loop through messages
@@ -148,7 +151,7 @@
                         textarea.value = '';
                     }
                 });
-                // Listen for keydown
+                // Listen for chat input
                 textarea.addEventListener('keydown', function (event) {
                     var self = this,
                         name = chatName.value;
@@ -159,7 +162,8 @@
                         });
                     }
                 });
-
+                
+                // Listen for url input
                 playlistInput.addEventListener('keydown', function (event) {
                     var self = this,
                         name = chatName.value;
@@ -170,6 +174,8 @@
                         })
                     }
                 });
+
+                // Listen for generating video
                 var self = this;
                 socket.on('new_video_id', function (payload) {
                     console.log('new player');
@@ -189,6 +195,7 @@
                     });
                 });
 
+                // Listen for force sync
                 socket.on('host_video_progress', function (payload) {
                     console.log('Force sync recieved' + payload.time);
                     if (playerIsReady) {

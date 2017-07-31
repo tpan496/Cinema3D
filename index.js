@@ -42,6 +42,7 @@ mongo.connect(mongodbAddress, function (error, db) {
             socket.emit('new_chat_message', result);
         });
 
+        // Listen for new chat message
         socket.on('user_chat_message', function (payload) {
             var name = payload.name,
                 message = payload.message,
@@ -58,7 +59,7 @@ mongo.connect(mongodbAddress, function (error, db) {
             }
         });
 
-        // Receive new video 
+        // Listen for new video url
         socket.on('user_video_url', function (payload) {
             var name = payload.name,
                 url = payload.url,
@@ -78,25 +79,25 @@ mongo.connect(mongodbAddress, function (error, db) {
             }
         });
 
-        // Check if Youtube player is ready
+        // Listen for youtube player status
         var testVideoId = 'M7lc1UVf-VE';
         socket.on('user_youtube_player_status', function (payload) {
             if (payload.status == 1) {
                 if (videoHostId == null) {
-                    console.log('host appeared: ' + socket.id);
+                    console.log('Host appeared: ' + socket.id);
                     videoHostId = socket.id;
                 }
                 socket.emit('new_video_id', { id: testVideoId });
             } 
         });
 
-        // Synchronous check
+        // Listen for video progress and force sync if necessary
         socket.on('user_video_progress', function (payload) {
             console.log('progress');
             var time = payload.time;
             if (socket.id === videoHostId) {
                 videoHostTime = time;
-                console.log('host progress: ' + time);
+                console.log('Host progress: ' + time);
             } else {
                 if (Math.abs(videoHostTime - time) > forceSyncThreshold) {
                     socket.emit("host_video_progress", {time: videoHostTime});
