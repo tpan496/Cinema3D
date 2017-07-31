@@ -26,7 +26,7 @@ mongo.connect(mongodbAddress, function (error, db) {
     if (error) throw error;
     client.on('connection', function (socket) {
         console.log('New client: ' + socket.id);
-        userIdList.push(socket.id);
+        clientIdList.push(socket.id);
 
         // Get chat history and video playlist from database
         var chatMessages = db.collection('chat_messages'),
@@ -42,7 +42,6 @@ mongo.connect(mongodbAddress, function (error, db) {
             socket.emit('new_chat_message', result);
         });
 
-        // Receive new chat message
         socket.on('user_chat_message', function (payload) {
             var name = payload.name,
                 message = payload.message,
@@ -59,7 +58,7 @@ mongo.connect(mongodbAddress, function (error, db) {
             }
         });
 
-        // Receive new video url
+        // Receive new video 
         socket.on('user_video_url', function (payload) {
             var name = payload.name,
                 url = payload.url,
@@ -109,15 +108,6 @@ mongo.connect(mongodbAddress, function (error, db) {
         socket.on('user_host_request', function(payload){
             videoHostId = socket.id;
         });
-    });
-
-    // Diconnect
-    socket.on('disconnect', function(){
-        var i = allClients.indexOf(socket);
-        clientIdList.splice(i);
-        if(socket == videoHostId){
-            videoHostId = clientIdList[clientIdList.length-1];
-        }
     });
 });
 

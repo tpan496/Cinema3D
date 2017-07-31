@@ -36,7 +36,7 @@
         try {
             var socket = io.connect();
         } catch (e) {
-            // Set status to warn user
+            throw e;
         }
 
         // Test button
@@ -131,7 +131,7 @@
                         // Loop through messages
                         for (var x = 0; x < payload.length; x = x + 1) {
                             var url = document.createElement('div');
-                            url.setAttribute('class', 'video_url');
+                            url.setAttribute('class', 'new_video_url');
                             url.textContent = payload[x].url;
 
                             // Append
@@ -190,7 +190,7 @@
                 });
 
                 socket.on('host_video_progress', function (payload) {
-                    console.log('force update recieved' + payload.time);
+                    console.log('Force sync recieved' + payload.time);
                     if (playerIsReady) {
                         player.seekTo(payload.time, true);
                     }
