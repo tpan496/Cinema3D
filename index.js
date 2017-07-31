@@ -48,7 +48,7 @@ mongo.connect(mongodbAddress, function (error, db) {
         // Listen for new chat message
         socket.on('user_chat_message', function (payload) {
             var name = payload.name,
-                message = payload.message,
+                message = payload.message;
 
             if (whitespacePattern.test(name) || whitespacePattern.test(message)) {
                 sendStatus('Name and message is required');
@@ -64,7 +64,7 @@ mongo.connect(mongodbAddress, function (error, db) {
         // Listen for new video url
         socket.on('user_video_url', function (payload) {
             var name = payload.name,
-                url = payload.url,
+                url = payload.url;
 
             if (whitespacePattern.test(name) || whitespacePattern.test(url)) {
                 sendStatus('Valid url is required');
