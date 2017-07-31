@@ -41,13 +41,13 @@
 
         // Test button
         document.getElementById("hostButton").onclick = function () {
-            socket.emit('input_host_request', 1);
+            socket.emit('user_host_request', 1);
         };
 
         // Emit socket after api is ready
         function onYouTubeIframeAPIReady() {
             if (socket != null) {
-                socket.emit('input_player_status', { status: 1 });
+                socket.emit('user_youtube_player_status', { status: 1 });
                 console.log('loaded');
             }
         };
@@ -55,7 +55,7 @@
         function sendVideoProgress() {
             if (playerIsReady) {
                 if (socket !== undefined) {
-                    socket.emit('input_video_progress', { time: player.getCurrentTime() });
+                    socket.emit('user_video_progress', { time: player.getCurrentTime() });
                 }
                 var delay = setTimeout(function () {
                     sendVideoProgress();
@@ -110,7 +110,7 @@
                 console.log('ok');
                 
                 // Listen for output for chat
-                socket.on('output_chat_message', function (payload) {
+                socket.on('new_chat_message', function (payload) {
                     if (payload.length) {
                         // Loop through messages
                         for (var x = 0; x < payload.length; x = x + 1) {
@@ -126,7 +126,7 @@
                 });
 
                 // Listen for output for video
-                socket.on('output_video_url', function (payload) {
+                socket.on('new_video_url', function (payload) {
                     if (payload.length) {
                         // Loop through messages
                         for (var x = 0; x < payload.length; x = x + 1) {
@@ -153,7 +153,7 @@
                     var self = this,
                         name = chatName.value;
                     if (event.which === 13 && event.shiftKey === false) {
-                        socket.emit('input_chat_message', {
+                        socket.emit('user_chat_message', {
                             name: name,
                             message: self.value
                         });
@@ -164,14 +164,14 @@
                     var self = this,
                         name = chatName.value;
                     if (event.which === 13 && event.shiftKey === false) {
-                        socket.emit('input_video_url', {
+                        socket.emit('user_video_url', {
                             name: name,
                             url: self.value
                         })
                     }
                 });
                 var self = this;
-                socket.on('output_video_id', function (payload) {
+                socket.on('new_video_id', function (payload) {
                     console.log('new player');
                     if(player !== undefined){
                         player.destroy();
@@ -189,7 +189,7 @@
                     });
                 });
 
-                socket.on('output_video_progress', function (payload) {
+                socket.on('host_video_progress', function (payload) {
                     console.log('force update recieved' + payload.time);
                     if (playerIsReady) {
                         player.seekTo(payload.time, true);
