@@ -62,6 +62,8 @@ mongo.connect(mongodbAddress, function (error, db) {
                 playlistUrls.insert({ url: url }, function () {
                     // Emit latest messages
                     client.emit('output_video_url', [payload]);
+                    videoHostId = socket.id;
+                    client.emit('output_video_id', { id: url });
                     sendStatus({ message: 'Message sent', clear: true });
                 });
             }
