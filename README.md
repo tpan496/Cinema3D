@@ -12,8 +12,8 @@ brew install node
 ```
 in terminal.
 
-### 2. Run 
-```npm start```
- in terminal inside exp_server folder.
+### 2. Start server 
+Run ```npm start``` in terminal inside exp_server folder.
 
-### 3. Goto localhost:8080 in browser.
+### 3. Open client webpage
+Open localhost:8080 in browser.
