@@ -19,10 +19,9 @@
         <input class="video-input" type="text" placeholder="Enter youtube url">
         <div id="video-placeholder"></div>
     </div>
-    <button id="hostButton"type="button">Become host</button>
+    <button id="hostButton" type="button">Become host</button>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-
         // Video Player
         var player;
         var playerIsReady = false;
@@ -42,8 +41,8 @@
 
         // Test button
         document.getElementById("hostButton").onclick = function () {
-            socket.emit('input_host_request',1);
-         };
+            socket.emit('input_host_request', 1);
+        };
 
         // Emit socket after api is ready
         function onYouTubeIframeAPIReady() {
@@ -55,8 +54,8 @@
 
         function sendProgress() {
             if (playerIsReady) {
-                if(socket !== undefined){
-                    socket.emit('input_video_progress', {time: player.getCurrentTime()});
+                if (socket !== undefined) {
+                    socket.emit('input_video_progress', { time: player.getCurrentTime() });
                 }
                 var delay = setTimeout(function () {
                     sendProgress();
@@ -172,6 +171,10 @@
                 var self = this;
                 socket.on('output_video_id', function (payload) {
                     console.log('new player');
+                    if(player !== undefined){
+                        player.destroy();
+                        playerIsReady = false;
+                    }
                     self.player = new YT.Player('video-placeholder', {
                         height: '390',
                         width: '640',

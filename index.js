@@ -53,7 +53,7 @@ mongo.connect(mongodbAddress, function (error, db) {
 
         socket.on('input_video_url', function (payload) {
             var name = payload.name,
-                url = payload.url
+                url = payload.url;
             whitespacePattern = /^\s*$/;
 
             if (whitespacePattern.test(name) || whitespacePattern.test(url)) {
@@ -64,6 +64,7 @@ mongo.connect(mongodbAddress, function (error, db) {
                     client.emit('output_video_url', [payload]);
                     videoHostId = socket.id;
                     client.emit('output_video_id', { id: url });
+                    console.log(url);
                     sendStatus({ message: 'Message sent', clear: true });
                 });
             }
