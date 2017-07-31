@@ -17,3 +17,7 @@ Run ```npm start``` in terminal inside exp_server folder.
 
 ### 3. Open client webpage
 Open localhost:8080 in browser.
+
+## Try Online
+[Click here](https://tpan496.azurewebsites.net)
+It is subject to maintenance so don't expect too much.
