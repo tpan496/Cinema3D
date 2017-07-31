@@ -90,6 +90,10 @@ mongo.connect(mongodbAddress, function (error, db) {
                 }
             }
         }); 
+
+        socket.on('input_host_request', function(payload){
+            videoHostId = socket.id;
+        });
     })
 });
 

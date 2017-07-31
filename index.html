@@ -19,8 +19,10 @@
         <input class="video-input" type="text" placeholder="Enter youtube url">
         <div id="video-placeholder"></div>
     </div>
+    <button id="hostButton"type="button">Become host</button>
     <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
     <script>
+
         // Video Player
         var player;
         var playerIsReady = false;
@@ -37,6 +39,11 @@
         } catch (e) {
             // Set status to warn user
         }
+
+        // Test button
+        document.getElementById("hostButton").onclick = function () {
+            socket.emit('input_host_request',1);
+         };
 
         // Emit socket after api is ready
         function onYouTubeIframeAPIReady() {
