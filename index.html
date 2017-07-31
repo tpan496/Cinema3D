@@ -15,81 +15,177 @@
         </div>
     </div>
     <div class="video">
-        <video width="480" height="320" controls="controls">
-            <source src="video/wow.mp4">
-        </video>
+        <div class="video-playlist"></div>
+        <input class="video-input" type="text" placeholder="Enter youtube url">
+        <div id="video-placeholder"></div>
     </div>
-    <script src="http://127.0.0.1:8080/socket.io/socket.io.js">
-        
-</script>
-<script>
-    (function(){
-        var getNode = function(s){
-            return document.querySelector(s);
-        },
+    <script src="http://127.0.0.1:8080/socket.io/socket.io.js"></script>
+    <script>
+        // Video Player
+        var player;
+        var playerIsReady = false;
 
-        // Get required nodes
-        status = getNode('.chat-status span'),
-        messages = getNode('.chat-messages'),
-        textarea = getNode('.chat textarea'),
-        chatName = getNode('.chat-name');
-        statusDefault = status.textContent;
-        setStatus = function(s){
-            status.textContent = s;
-            if(s !== statusDefault){
-                var delay = setTimeout(function(){
-                    setStatus(statusDefault);
-                    clearInterval(delay);
-                }, 3000);
-            }
-        };
+        var tag = document.createElement('script');
 
-        setStatus('Testing...');
-        try{
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // Establish socket
+        try {
             var socket = io.connect('http://127.0.0.1:8080');
-        }catch(e){
+        } catch (e) {
             // Set status to warn user
         }
 
-        if(socket != undefined){
-            console.log('ok');
-            // Listen for output
-            socket.on('output', function(payload){
-                if(payload.length){
-                    // Loop through messages
-                    for(var x = 0; x < payload.length; x = x+1){
-                        var message = document.createElement('div');
-                        message.setAttribute('class', 'chat-message');
-                        message.textContent = payload[x].name + ': ' + payload[x].message;
+        // Emit socket after api is ready
+        function onYouTubeIframeAPIReady() {
+            if (socket != null) {
+                socket.emit('input_player_status', { status: 1 });
+                console.log('loaded');
+            }
+        };
 
-                        // Append
-                        messages.appendChild(message);
-                        messages.insertBefore(message, messages.firstChild);
-                    }
+        function sendProgress() {
+            if (playerIsReady) {
+                if(socket !== undefined){
+                    socket.emit('input_video_progress', {time: player.getCurrentTime()});
                 }
-            })
-
-            // Listen for a status
-            socket.on('status', function(payload){
-                setStatus((typeof payload === 'object')? payload.message : payload);
-                if(payload.clear === true){
-                    textarea.value = '';
-                }
-            });
-            // Listen for keydown
-            textarea.addEventListener('keydown', function(event){
-                var self = this,
-                    name = chatName.value;
-                if(event.which === 13 && event.shiftKey === false){
-                    socket.emit('input', {
-                        name: name,
-                        message: self.value
-                    });
-                }
-            })
+                var delay = setTimeout(function () {
+                    sendProgress();
+                    clearInterval(delay);
+                }, 1000);
+            }
+        };
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            playerIsReady = true;
+            sendProgress();
         }
-    })();
-</script>
+
+        // 5. The API calls this function when the player's state changes.
+        //    The function indicates that when playing a video (state=1),
+        //    the player should play for six seconds and then stop.
+        var done = false;
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING && !done) {
+                done = true;
+            }
+        }
+        function stopVideo() {
+            player.stopVideo();
+        }
+        (function () {
+            var getNode = function (s) {
+                return document.querySelector(s);
+            },
+                status = getNode('.chat-status span'),
+                messages = getNode('.chat-messages'),
+                textarea = getNode('.chat textarea'),
+                chatName = getNode('.chat-name'),
+                statusDefault = status.textContent,
+                playlist = getNode('.video-playlist'),
+                playlistInput = getNode('.video-input');
+
+            setStatus = function (s) {
+                status.textContent = s;
+                if (s !== statusDefault) {
+                    var delay = setTimeout(function () {
+                        setStatus(statusDefault);
+                        clearInterval(delay);
+                    }, 5000);
+                }
+            };
+
+            setStatus('Testing...');
+
+            if (socket != undefined) {
+                console.log('ok');
+                // Listen for output for chat
+                socket.on('output_chat_message', function (payload) {
+                    if (payload.length) {
+                        // Loop through messages
+                        for (var x = 0; x < payload.length; x = x + 1) {
+                            var message = document.createElement('div');
+                            message.setAttribute('class', 'chat-message');
+                            message.textContent = payload[x].name + ': ' + payload[x].message;
+
+                            // Append
+                            messages.appendChild(message);
+                            messages.insertBefore(message, messages.firstChild);
+                        }
+                    }
+                });
+
+                // Listen for output for video
+                socket.on('output_video_url', function (payload) {
+                    if (payload.length) {
+                        // Loop through messages
+                        for (var x = 0; x < payload.length; x = x + 1) {
+                            var url = document.createElement('div');
+                            url.setAttribute('class', 'video_url');
+                            url.textContent = payload[x].url;
+
+                            // Append
+                            playlist.appendChild(url);
+                            playlist.insertBefore(url, playlist.firstChild);
+                        }
+                    }
+                });
+
+                // Listen for a status
+                socket.on('status', function (payload) {
+                    setStatus((typeof payload === 'object') ? payload.message : payload);
+                    if (payload.clear === true) {
+                        textarea.value = '';
+                    }
+                });
+                // Listen for keydown
+                textarea.addEventListener('keydown', function (event) {
+                    var self = this,
+                        name = chatName.value;
+                    if (event.which === 13 && event.shiftKey === false) {
+                        socket.emit('input_chat_message', {
+                            name: name,
+                            message: self.value
+                        });
+                    }
+                });
+
+                playlistInput.addEventListener('keydown', function (event) {
+                    var self = this,
+                        name = chatName.value;
+                    if (event.which === 13 && event.shiftKey === false) {
+                        socket.emit('input_video_url', {
+                            name: name,
+                            url: self.value
+                        })
+                    }
+                });
+                var self = this;
+                socket.on('output_video_id', function (payload) {
+                    console.log('new player');
+                    self.player = new YT.Player('video-placeholder', {
+                        height: '390',
+                        width: '640',
+                        videoId: payload.id,
+                        playerVars: { 'autoplay': 1, 'controls': 0 },
+                        events: {
+                            'onReady': self.onPlayerReady,
+                            'onStateChange': self.onPlayerStateChange
+                        }
+                    });
+                });
+
+                socket.on('output_video_progress', function (payload) {
+                    console.log('force update recieved' + payload.time);
+                    if (playerIsReady) {
+                        player.seekTo(payload.time, true);
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 
 </html>
