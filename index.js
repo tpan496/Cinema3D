@@ -10,6 +10,10 @@ var videoHostTime;
 var forceUpdateThreshold = 1;
 
 server.listen(port);
+var io = require('socket.io')(server);
+io.configure(function() {
+    io.set('transports', ['websocket']);
+});
 app.use(express.static(__dirname));
 
 var client = require('socket.io').listen(server);
