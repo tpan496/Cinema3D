@@ -52,13 +52,13 @@
             }
         };
 
-        function sendProgress() {
+        function sendVideoProgress() {
             if (playerIsReady) {
                 if (socket !== undefined) {
                     socket.emit('input_video_progress', { time: player.getCurrentTime() });
                 }
                 var delay = setTimeout(function () {
-                    sendProgress();
+                    sendVideoProgress();
                     clearInterval(delay);
                 }, 1000);
             }
@@ -66,12 +66,9 @@
         function onPlayerReady(event) {
             event.target.playVideo();
             playerIsReady = true;
-            sendProgress();
+            sendVideoProgress();
         }
 
-        // 5. The API calls this function when the player's state changes.
-        //    The function indicates that when playing a video (state=1),
-        //    the player should play for six seconds and then stop.
         var done = false;
         function onPlayerStateChange(event) {
             if (event.data == YT.PlayerState.PLAYING && !done) {
@@ -81,6 +78,8 @@
         function stopVideo() {
             player.stopVideo();
         }
+
+        // Main body
         (function () {
             var getNode = function (s) {
                 return document.querySelector(s);
@@ -93,6 +92,7 @@
                 playlist = getNode('.video-playlist'),
                 playlistInput = getNode('.video-input');
 
+            // Status for texting/video
             setStatus = function (s) {
                 status.textContent = s;
                 if (s !== statusDefault) {
@@ -104,9 +104,11 @@
             };
 
             setStatus('Testing...');
-
+            
+            // Socket events
             if (socket != undefined) {
                 console.log('ok');
+                
                 // Listen for output for chat
                 socket.on('output_chat_message', function (payload) {
                     if (payload.length) {
