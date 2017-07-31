@@ -11,12 +11,14 @@ const whitespacePattern = /^\s*$/;
 
 // Only one room, so keeping the host here
 var clientIdList = [];
+var videoUrlList = [];
+var hostYTPlayerStatus;
 var videoHostId;
 var videoHostTime;
 
 // Server settings
 var socket = require('socket.io')({
-  transports  : [ 'websocket' ]
+    transports: ['websocket']
 });
 server.listen(port);
 app.use(express.static(__dirname));
@@ -73,7 +75,11 @@ mongo.connect(mongodbAddress, function (error, db) {
                     // Start new video and throw url into playlist
                     client.emit('new_video_url', [payload]);
                     videoHostId = socket.id;
-                    client.emit('new_video_id', { id: url });
+                    videoUrlList.push(url);
+                    if (hostVideoStatus == 0) {
+                        videoUrlList.shift();
+                        client.emit('new_video_id', { id: url });
+                    }
                     console.log(url);
                     sendStatus({ message: 'Url sent', clear: true });
                 });
@@ -89,24 +95,41 @@ mongo.connect(mongodbAddress, function (error, db) {
                     videoHostId = socket.id;
                 }
                 socket.emit('new_video_id', { id: testVideoId });
-            } 
+            }
         });
 
         // Listen for video progress and force sync if necessary
         socket.on('user_video_progress', function (payload) {
             var time = payload.time;
+            var status = payload.status;
             if (socket.id === videoHostId) {
                 videoHostTime = time;
+                switch (status) {
+                    case 0:
+                        if (videoUrlList.length > 0) {
+                            var url = videoUrlList.shift();
+                            client.emit('new_video_id', { id: url });
+                        }
+                        break;
+                    case 1:
+                        if (hostYTPlayerStatus !== status) {
+                            client.emit("host_video_progress", { time: videoHostTime, status: 1 });
+                        } 
+                        break;
+                    case 2: client.emit("host_video_progress", { time: videoHostTime, status: 2 }); break;
+                    default: break;
+                }
+                hostYTPlayerStatus = status;
                 console.log('Host progress: ' + time);
             } else {
                 if (Math.abs(videoHostTime - time) > forceSyncThreshold) {
-                    socket.emit("host_video_progress", {time: videoHostTime});
+                    socket.emit("host_video_progress", { time: videoHostTime, status: status });
                 }
             }
-        }); 
+        });
 
         // Request to be host
-        socket.on('user_host_request', function(payload){
+        socket.on('user_host_request', function (payload) {
             videoHostId = socket.id;
         });
     });

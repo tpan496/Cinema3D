@@ -23,8 +23,9 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         // Video Player
-        var player;
-        var playerIsReady = false;
+        var YTPlayer;
+        var YTPlayerIsReady = false;
+        var YTPlayerStatus;
 
         var tag = document.createElement('script');
 
@@ -54,9 +55,9 @@
 
         // Repeatedly send local video progress
         function sendVideoProgress() {
-            if (playerIsReady) {
-                if (socket !== undefined) {
-                    socket.emit('user_video_progress', { time: player.getCurrentTime() });
+            if (YTPlayerIsReady) {
+                if (socket !== undefined && YTPlayerStatus !== YT.PlayerState.PAUSED) {
+                    socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
                 }
                 var delay = setTimeout(function () {
                     sendVideoProgress();
@@ -67,19 +68,21 @@
 
         function onPlayerReady(event) {
             event.target.playVideo();
-            playerIsReady = true;
+            YTPlayerStatus = 1;
+            YTPlayerIsReady = true;
             sendVideoProgress();
         }
 
-        var done = false;
         function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING && !done) {
-                done = true;
+            if(event.data != YTPlayerStatus && event.data !== 3){
+                console.log(event.data);
+                YTPlayerStatus = event.data;
+                socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
             }
         }
 
         function stopVideo() {
-            player.stopVideo();
+            YTPlayer.stopVideo();
         }
 
         // Main body
@@ -151,6 +154,7 @@
                         textarea.value = '';
                     }
                 });
+
                 // Listen for chat input
                 textarea.addEventListener('keydown', function (event) {
                     var self = this,
@@ -179,11 +183,11 @@
                 var self = this;
                 socket.on('new_video_id', function (payload) {
                     console.log('new player');
-                    if(player !== undefined){
-                        player.destroy();
-                        playerIsReady = false;
+                    if(YTPlayer !== undefined){
+                        YTPlayer.destroy();
+                        YTPlayerIsReady = false;
                     }
-                    self.player = new YT.Player('video-placeholder', {
+                    self.YTPlayer = new YT.Player('video-placeholder', {
                         height: '390',
                         width: '640',
                         videoId: payload.id,
@@ -197,9 +201,14 @@
 
                 // Listen for force sync
                 socket.on('host_video_progress', function (payload) {
-                    console.log('Force sync recieved' + payload.time);
-                    if (playerIsReady) {
-                        player.seekTo(payload.time, true);
+                    console.log('Force sync recieved' + payload.time + 'status: '+payload.status);
+                    switch(payload.status){
+                        case 1: if(YTPlayerStatus!==1){ YTPlayer.playVideo(); YTPlayerStatus = 1; } break;
+                        case 2: YTPlayer.pauseVideo(); YTPlayerStatus = 2; console.log('paused'); break;
+                        default: break;
+                    }
+                    if (YTPlayerIsReady) {
+                        YTPlayer.seekTo(payload.time, true);
                     }
                 });
             }
