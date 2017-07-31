@@ -4,8 +4,10 @@
     <title> EXP cinema</title>
     <link rel="stylesheet" href="css/index.css">
 </head>
-
+Eric Bachman is a Lying Fuck
+<div class="row">
 <body>
+    <div div id="column3" style="float:right; margin:0;width:33%">
     <div class="chat">
         <input type="text" class="chat-name" placeholder="Enter your name" value="">
         <div class="chat-messages"></div>
@@ -14,6 +16,8 @@
             Status: <span>Idle</span>
         </div>
     </div>
+  </div>
+  <div id="column1" style="float:right; margin:0; width:66%;">
     <div class="video">
         <div class="video-playlist"></div>
         <input class="video-input" type="text" placeholder="Enter youtube url">
@@ -21,6 +25,7 @@
     </div>
     <button id="hostButton" type="button">Become host</button>
     <script src="/socket.io/socket.io.js"></script>
+</div>
     <script>
         // Video Player
         var player;
@@ -197,5 +202,6 @@
         })();
     </script>
 </body>
+</div>
 
 </html>
