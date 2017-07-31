@@ -20,7 +20,7 @@
         <div id="video-placeholder"></div>
     </div>
     <button id="hostButton"type="button">Become host</button>
-    <script src="http://tpan496.azurewebsites.net/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
 
         // Video Player
@@ -35,7 +35,7 @@
 
         // Establish socket
         try {
-            var socket = io.connect('http://tpan496.azurewebsites.net/');
+            var socket = io.connect();
         } catch (e) {
             // Set status to warn user
         }
