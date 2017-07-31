@@ -5,11 +5,14 @@ var server = require('http').createServer(app);
 var port = process.env.PORT || 8080;
 var mongodbAddress = 'mongodb://tpan496:trollNoob971006!@exp-server-shard-00-00-8ecae.mongodb.net:27017,exp-server-shard-00-01-8ecae.mongodb.net:27017,exp-server-shard-00-02-8ecae.mongodb.net:27017/exp-server?ssl=true&replicaSet=exp-server-shard-0&authSource=admin'
 
+// Consts
+const forceSyncThreshold = 3; // synchronize check frequency
+const whitespacePattern = /^\s*$/;
+
 // Only one room, so keeping the host here
 var clientIdList = [];
 var videoHostId;
 var videoHostTime;
-const forceSyncThreshold = 3; // synchronize check frequency
 
 // Server settings
 var socket = require('socket.io')({
@@ -35,7 +38,7 @@ mongo.connect(mongodbAddress, function (error, db) {
                 socket.emit('status', s);
             };
 
-        // Display messages in chat screen
+        // Display history messages in chat screen
         chatMessages.find().limit(100).sort({ _id: 1 }).toArray(function (error, result) {
             if (error) throw error;
             console.log(result);
@@ -46,7 +49,6 @@ mongo.connect(mongodbAddress, function (error, db) {
         socket.on('user_chat_message', function (payload) {
             var name = payload.name,
                 message = payload.message,
-                whitespacePattern = /^\s*$/;
 
             if (whitespacePattern.test(name) || whitespacePattern.test(message)) {
                 sendStatus('Name and message is required');
@@ -63,7 +65,6 @@ mongo.connect(mongodbAddress, function (error, db) {
         socket.on('user_video_url', function (payload) {
             var name = payload.name,
                 url = payload.url,
-                whitespacePattern = /^\s*$/;
 
             if (whitespacePattern.test(name) || whitespacePattern.test(url)) {
                 sendStatus('Valid url is required');
@@ -93,7 +94,6 @@ mongo.connect(mongodbAddress, function (error, db) {
 
         // Listen for video progress and force sync if necessary
         socket.on('user_video_progress', function (payload) {
-            console.log('progress');
             var time = payload.time;
             if (socket.id === videoHostId) {
                 videoHostTime = time;
