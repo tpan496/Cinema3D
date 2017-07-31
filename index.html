@@ -74,7 +74,7 @@
         }
 
         function onPlayerStateChange(event) {
-            if(event.data != YTPlayerStatus && event.data !== 3){
+            if (event.data != YTPlayerStatus && event.data !== 3) {
                 console.log(event.data);
                 YTPlayerStatus = event.data;
                 socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
@@ -110,11 +110,11 @@
             };
 
             setStatus('Testing...');
-            
+
             // Socket events
             if (socket != undefined) {
                 console.log('ok');
-                
+
                 // Listen for new chat message
                 socket.on('new_chat_message', function (payload) {
                     if (payload.length) {
@@ -166,7 +166,7 @@
                         });
                     }
                 });
-                
+
                 // Listen for url input
                 playlistInput.addEventListener('keydown', function (event) {
                     var self = this,
@@ -183,7 +183,7 @@
                 var self = this;
                 socket.on('new_video_id', function (payload) {
                     console.log('new player');
-                    if(YTPlayer !== undefined){
+                    if (YTPlayer !== undefined) {
                         YTPlayer.destroy();
                         YTPlayerIsReady = false;
                     }
@@ -201,10 +201,19 @@
 
                 // Listen for force sync
                 socket.on('host_video_progress', function (payload) {
-                    console.log('Force sync recieved' + payload.time + 'status: '+payload.status);
-                    switch(payload.status){
-                        case 1: if(YTPlayerStatus!==1){ YTPlayer.playVideo(); YTPlayerStatus = 1; } break;
-                        case 2: YTPlayer.pauseVideo(); YTPlayerStatus = 2; console.log('paused'); break;
+                    console.log('Force sync recieved' + payload.time + 'status: ' + payload.status);
+                    switch (payload.status) {
+                        case 1:
+                            if (YTPlayerStatus !== 1) {
+                                YTPlayer.playVideo();
+                                YTPlayerStatus = 1;
+                            }
+                            break;
+                        case 2:
+                            YTPlayer.pauseVideo();
+                            YTPlayerStatus = 2;
+                            console.log('paused');
+                            break;
                         default: break;
                     }
                     if (YTPlayerIsReady) {
