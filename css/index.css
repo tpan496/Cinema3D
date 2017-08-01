@@ -48,7 +48,7 @@ body {
 
 .video {
     width: 300px;
-    float: right;
+    float: left;
 }
 
 .video-playlist,

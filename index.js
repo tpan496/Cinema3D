@@ -15,6 +15,7 @@ const YT_VIDEO_PAUSED = 2;
 // Only one room, so keeping the host here
 var clientIdList = [];
 var videoUrlList = [];
+var currentVideoUrl = 'M7lc1UVf-VE';
 var hostYTPlayerStatus;
 var videoHostId;
 var videoHostTime;
@@ -91,7 +92,8 @@ mongo.connect(mongodbAddress, function (error, db) {
                     // If no video is playing now
                     if (hostYTPlayerStatus == YT_VIDEO_ENDED) {
                         videoUrlList.shift();
-                        client.emit('new_video_id', { id: url });
+                        currentVideoUrl = url;
+                        client.emit('new_video_id', { id: currentVideoUrl });
                     }
                     console.log(url);
                     sendStatus({ message: 'Url sent', clear: true });
@@ -99,7 +101,6 @@ mongo.connect(mongodbAddress, function (error, db) {
         });
 
         // Listen for youtube player status
-        var testVideoId = 'M7lc1UVf-VE';
         socket.on('user_youtube_player_status', function (payload) {
             if (payload.status == 1) {
                 if (videoHostId == null) {
@@ -107,7 +108,7 @@ mongo.connect(mongodbAddress, function (error, db) {
                     videoHostId = socket.id;
                     socket.emit("host_video_progress", { time: videoHostTime, status: hostYTPlayerStatus, hostId: videoHostId });
                 }
-                socket.emit('new_video_id', { id: testVideoId });
+                socket.emit('new_video_id', { id: currentVideoUrl });
             }
         });
 
@@ -120,8 +121,8 @@ mongo.connect(mongodbAddress, function (error, db) {
                 switch (status) {
                     case YT_VIDEO_ENDED:
                         if (videoUrlList.length > 0) {
-                            var url = videoUrlList.shift();
-                            client.emit('new_video_id', { id: url });
+                            currentVideoUrl = videoUrlList.shift();
+                            client.emit('new_video_id', { id: currentVideoUrl });
                         }
                         break;
                     case YT_VIDEO_PLAYING:
