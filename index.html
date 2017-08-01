@@ -19,7 +19,8 @@
         <input class="video-input" type="text" placeholder="Enter youtube url">
         <div id="video-placeholder"></div>
     </div>
-    <button id="hostButton" type="button">Become host</button>
+    <button id="host-button" type="button">Become host</button>
+    <div class="host-id"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         // Video Player
@@ -33,6 +34,18 @@
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+        var getNode = function (s) {
+            return document.querySelector(s);
+        },
+            status = getNode('.chat-status span'),
+            messages = getNode('.chat-messages'),
+            textarea = getNode('.chat textarea'),
+            chatName = getNode('.chat-name'),
+            statusDefault = status.textContent,
+            playlist = getNode('.video-playlist'),
+            playlistInput = getNode('.video-input'),
+            hostId = getNode('.host-id');
+
         // Establish socket
         try {
             var socket = io.connect();
@@ -40,9 +53,24 @@
             throw e;
         }
 
+        // Status for texting/video
+        var setStatus = function (s) {
+            status.textContent = s;
+            if (s !== statusDefault) {
+                var delay = setTimeout(function () {
+                    setStatus(statusDefault);
+                    clearInterval(delay);
+                }, 5000);
+            }
+        };
+
         // Test button
-        document.getElementById("hostButton").onclick = function () {
-            socket.emit('user_host_request', 1);
+        document.getElementById("host-button").onclick = function () {
+            if (YTPlayerIsReady) {
+                socket.emit('user_host_request', { time: YTPlayer.getCurrentTime, status: YTPlayerStatus });
+            } else {
+                setStatus('Your player is not ready');
+            }
         };
 
         // Emit socket after api is ready
@@ -87,27 +115,6 @@
 
         // Main body
         (function () {
-            var getNode = function (s) {
-                return document.querySelector(s);
-            },
-                status = getNode('.chat-status span'),
-                messages = getNode('.chat-messages'),
-                textarea = getNode('.chat textarea'),
-                chatName = getNode('.chat-name'),
-                statusDefault = status.textContent,
-                playlist = getNode('.video-playlist'),
-                playlistInput = getNode('.video-input');
-
-            // Status for texting/video
-            setStatus = function (s) {
-                status.textContent = s;
-                if (s !== statusDefault) {
-                    var delay = setTimeout(function () {
-                        setStatus(statusDefault);
-                        clearInterval(delay);
-                    }, 5000);
-                }
-            };
 
             setStatus('Testing...');
 
@@ -133,6 +140,7 @@
 
                 // Listen for new video url
                 socket.on('new_video_url', function (payload) {
+                    console.log(payload);
                     if (payload.length) {
                         // Loop through messages
                         for (var x = 0; x < payload.length; x = x + 1) {
@@ -202,6 +210,10 @@
                 // Listen for force sync
                 socket.on('host_video_progress', function (payload) {
                     console.log('Force sync recieved' + payload.time + 'status: ' + payload.status);
+                    hostId.textContent = payload.hostId;
+                    if (!YTPlayerIsReady) {
+                        return;
+                    }
                     switch (payload.status) {
                         case 1:
                             if (YTPlayerStatus !== 1) {
