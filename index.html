@@ -20,13 +20,15 @@ Eric Bachman is a Lying Fuck
         <input class="video-input" type="text" placeholder="Enter youtube url">
         <div id="video-placeholder" ></div>
     </div>
-    <button id="hostButton" type="button">Become host</button>
+    <button id="host-button" type="button">Become host</button>
+    <div class="host-id"></div>
     <script src="/socket.io/socket.io.js"></script>
 </div>
     <script>
         // Video Player
-        var player;
-        var playerIsReady = false;
+        var YTPlayer;
+        var YTPlayerIsReady = false;
+        var YTPlayerStatus;
 
         var tag = document.createElement('script');
 
@@ -34,83 +36,96 @@ Eric Bachman is a Lying Fuck
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+        var getNode = function (s) {
+            return document.querySelector(s);
+        },
+            status = getNode('.chat-status span'),
+            messages = getNode('.chat-messages'),
+            textarea = getNode('.chat textarea'),
+            chatName = getNode('.chat-name'),
+            statusDefault = status.textContent,
+            playlist = getNode('.video-playlist'),
+            playlistInput = getNode('.video-input'),
+            hostId = getNode('.host-id');
+
         // Establish socket
         try {
             var socket = io.connect();
         } catch (e) {
-            // Set status to warn user
+            throw e;
         }
 
+        // Status for texting/video
+        var setStatus = function (s) {
+            status.textContent = s;
+            if (s !== statusDefault) {
+                var delay = setTimeout(function () {
+                    setStatus(statusDefault);
+                    clearInterval(delay);
+                }, 5000);
+            }
+        };
+
         // Test button
-        document.getElementById("hostButton").onclick = function () {
-            socket.emit('input_host_request', 1);
+        document.getElementById("host-button").onclick = function () {
+            if (YTPlayerIsReady) {
+                socket.emit('user_host_request', { time: YTPlayer.getCurrentTime, status: YTPlayerStatus });
+            } else {
+                setStatus('Your player is not ready');
+            }
         };
 
         // Emit socket after api is ready
         function onYouTubeIframeAPIReady() {
             if (socket != null) {
-                socket.emit('input_player_status', { status: 1 });
-                console.log('loaded');
+                socket.emit('user_youtube_player_status', { status: 1 });
+                console.log('Youtube player loaded');
             }
         };
 
-        function sendProgress() {
-            if (playerIsReady) {
-                if (socket !== undefined) {
-                    socket.emit('input_video_progress', { time: player.getCurrentTime() });
+        // Repeatedly send local video progress
+        function sendVideoProgress() {
+            if (YTPlayerIsReady) {
+                if (socket !== undefined && YTPlayerStatus !== YT.PlayerState.PAUSED) {
+                    socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
                 }
                 var delay = setTimeout(function () {
-                    sendProgress();
+                    sendVideoProgress();
                     clearInterval(delay);
                 }, 1000);
             }
         };
+
         function onPlayerReady(event) {
             event.target.playVideo();
-            playerIsReady = true;
-            sendProgress();
+            YTPlayerStatus = 1;
+            YTPlayerIsReady = true;
+            sendVideoProgress();
         }
 
-        // 5. The API calls this function when the player's state changes.
-        //    The function indicates that when playing a video (state=1),
-        //    the player should play for six seconds and then stop.
-        var done = false;
         function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING && !done) {
-                done = true;
+            if (event.data != YTPlayerStatus && event.data !== 3) {
+                console.log(event.data);
+                YTPlayerStatus = event.data;
+                socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
             }
         }
-        function stopVideo() {
-            player.stopVideo();
-        }
-        (function () {
-            var getNode = function (s) {
-                return document.querySelector(s);
-            },
-                status = getNode('.chat-status span'),
-                messages = getNode('.chat-messages'),
-                textarea = getNode('.chat textarea'),
-                chatName = getNode('.chat-name'),
-                statusDefault = status.textContent,
-                playlist = getNode('.video-playlist'),
-                playlistInput = getNode('.video-input');
 
-            setStatus = function (s) {
-                status.textContent = s;
-                if (s !== statusDefault) {
-                    var delay = setTimeout(function () {
-                        setStatus(statusDefault);
-                        clearInterval(delay);
-                    }, 5000);
-                }
-            };
+        function stopVideo() {
+            YTPlayer.stopVideo();
+        }
+
+        // Main body
+        (function () {
 
             setStatus('Testing...');
 
+            // Socket events
             if (socket != undefined) {
                 console.log('ok');
-                // Listen for output for chat
-                socket.on('output_chat_message', function (payload) {
+
+                // Listen for new chat message
+                socket.on('new_chat_message', function (payload) {
                     if (payload.length) {
                         // Loop through messages
                         for (var x = 0; x < payload.length; x = x + 1) {
@@ -125,13 +140,14 @@ Eric Bachman is a Lying Fuck
                     }
                 });
 
-                // Listen for output for video
-                socket.on('output_video_url', function (payload) {
+                // Listen for new video url
+                socket.on('new_video_url', function (payload) {
+                    console.log(payload);
                     if (payload.length) {
                         // Loop through messages
                         for (var x = 0; x < payload.length; x = x + 1) {
                             var url = document.createElement('div');
-                            url.setAttribute('class', 'video_url');
+                            url.setAttribute('class', 'new_video_url');
                             url.textContent = payload[x].url;
 
                             // Append
@@ -148,36 +164,40 @@ Eric Bachman is a Lying Fuck
                         textarea.value = '';
                     }
                 });
-                // Listen for keydown
+
+                // Listen for chat input
                 textarea.addEventListener('keydown', function (event) {
                     var self = this,
                         name = chatName.value;
                     if (event.which === 13 && event.shiftKey === false) {
-                        socket.emit('input_chat_message', {
+                        socket.emit('user_chat_message', {
                             name: name,
                             message: self.value
                         });
                     }
                 });
 
+                // Listen for url input
                 playlistInput.addEventListener('keydown', function (event) {
                     var self = this,
                         name = chatName.value;
                     if (event.which === 13 && event.shiftKey === false) {
-                        socket.emit('input_video_url', {
+                        socket.emit('user_video_url', {
                             name: name,
                             url: self.value
                         })
                     }
                 });
+
+                // Listen for generating video
                 var self = this;
-                socket.on('output_video_id', function (payload) {
+                socket.on('new_video_id', function (payload) {
                     console.log('new player');
-                    if(player !== undefined){
-                        player.destroy();
-                        playerIsReady = false;
+                    if (YTPlayer !== undefined) {
+                        YTPlayer.destroy();
+                        YTPlayerIsReady = false;
                     }
-                    self.player = new YT.Player('video-placeholder', {
+                    self.YTPlayer = new YT.Player('video-placeholder', {
                         height: '390',
                         width: '640',
                         videoId: payload.id,
@@ -189,10 +209,29 @@ Eric Bachman is a Lying Fuck
                     });
                 });
 
-                socket.on('output_video_progress', function (payload) {
-                    console.log('force update recieved' + payload.time);
-                    if (playerIsReady) {
-                        player.seekTo(payload.time, true);
+                // Listen for force sync
+                socket.on('host_video_progress', function (payload) {
+                    console.log('Force sync recieved' + payload.time + 'status: ' + payload.status);
+                    hostId.textContent = payload.hostId;
+                    if (!YTPlayerIsReady) {
+                        return;
+                    }
+                    switch (payload.status) {
+                        case 1:
+                            if (YTPlayerStatus !== 1) {
+                                YTPlayer.playVideo();
+                                YTPlayerStatus = 1;
+                            }
+                            break;
+                        case 2:
+                            YTPlayer.pauseVideo();
+                            YTPlayerStatus = 2;
+                            console.log('paused');
+                            break;
+                        default: break;
+                    }
+                    if (YTPlayerIsReady) {
+                        YTPlayer.seekTo(payload.time, true);
                     }
                 });
             }
