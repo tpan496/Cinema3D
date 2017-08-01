@@ -5,16 +5,27 @@ input {
 }
 
 body {
-    background-color: "#809AAD";
+    background-color: "#eee";
+    width: 1000px; margin: 0 auto;
+}
+
+#host-button,
+.host-id {
+    display: inline-block;
+}
+
+.content{
+    margin: 5px;
 }
 
 .chat{
+    margin: 5px;
+    vertical-align: text-top;
+    display: inline-block;
     width: 300px;
-    float: right;
 }
 
 .chat-messages,
-.chat textarea,
 .chat-name{
     border: 1px solid #bbb;
 }
@@ -24,7 +35,6 @@ body {
     height: 300px;
     overflow-y: scroll;
     margin-top: 10px;
-    background-color:#A0C4DE;
 }
 
 .chat-name{
@@ -38,34 +48,70 @@ body {
     width: 100%;
     padding: 10px;
     border-top: 0;
+    border: 1px solid #009DDC;
     max-width: 100%;
-    background-color:#A0C4DE;
 }
 
 .chat-status {
     color: #bbb;
 }
 
-.video {
-    width: 300px;
-    float: left;
+#chat-button-use-chat,
+#chat-button-use-console{
+    border: none;
+    width: 70px;
+    height: 35px;
+    background: #eee;
+    margin: 0;
 }
 
-.video-playlist,
-.video-input{
-    border: 1px solid #bbb;
+#chat-button-use-console{
+    margin-left: -2px;
+}
+
+.video{
+    vertical-align: text-top;
+    margin: 5px;
+    display: inline-block;
+    width: 640px;
+}
+
+.video-users,
+.video-playlist{
+    display: inline-block;
+    overflow-y: scroll;
+    height: 150px;
+    background-color:#333;
+    color: #fff;
+}
+.video-users{
+    width: 25%;
 }
 
 .video-playlist{
-    width: 100%;
-    height: 200px;
-    overflow-y: scroll;
-    margin-top: 10px;
-    background-color:#A0C4DE;
+    width: 74.3%;
+    text-align: center;
 }
 
-.video-input{
-    width: 100%;
-    height: 50px;
-    background-color:#A0C4DE;
+.video-banner{
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    vertical-align: middle;
+}
+
+#video-button-skip,
+#video-button-video-status{
+    float: right;
+    height: 40px;
+    width: 100px;
+}
+
+#video-button-video-status{
+    background-color: #0f0;
+}
+
+#video-placeholder{
+    margin-top: 5px;
+    display: inline-block;
 }

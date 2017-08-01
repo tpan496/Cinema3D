@@ -14,8 +14,8 @@ const YT_VIDEO_PAUSED = 2;
 
 // Only one room, so keeping the host here
 var clientIdList = [];
-var videoUrlList = [];
-var currentVideoUrl = 'M7lc1UVf-VE';
+var videoRequestList = [];
+var currentVideoUrl = 'VtI5HM7GVGY'; // default video
 var hostYTPlayerStatus;
 var videoHostId;
 var videoHostTime;
@@ -51,11 +51,9 @@ mongo.connect(mongodbAddress, function (error, db) {
             socket.emit('new_chat_message', result);
         });
 
-        console.log('length: '+ videoUrlList.length);
-
         // Display playlist to client
-        for(var i=0; i<videoUrlList.length; i++){
-            var payload = {url: videoUrlList[i]};
+        for (var i = 0; i < videoRequestList.length; i++) {
+            var payload = videoRequestList[i];
             socket.emit('new_video_url', [payload]);
         }
 
@@ -84,19 +82,18 @@ mongo.connect(mongodbAddress, function (error, db) {
                 sendStatus('Valid url is required');
             } else {
 
-                    // Start new video and throw url into playlist
-                    client.emit('new_video_url', [payload]);
-                    videoHostId = socket.id;
-                    videoUrlList.push(url);
+                // Throw url into playlist
+                client.emit('new_video_url', [payload]);
+                videoRequestList.push({ name: name, url: url });
 
-                    // If no video is playing now
-                    if (hostYTPlayerStatus == YT_VIDEO_ENDED) {
-                        videoUrlList.shift();
-                        currentVideoUrl = url;
-                        client.emit('new_video_id', { id: currentVideoUrl });
-                    }
-                    console.log(url);
-                    sendStatus({ message: 'Url sent', clear: true });
+                // If no video is playing now
+                if (hostYTPlayerStatus == YT_VIDEO_ENDED) {
+                    videoRequestList.shift();
+                    currentVideoUrl = url;
+                    client.emit('new_video_id', { name: name, id: currentVideoUrl });
+                }
+                console.log(url);
+                sendStatus({ message: 'Url sent', clear: true });
             }
         });
 
@@ -120,23 +117,27 @@ mongo.connect(mongodbAddress, function (error, db) {
                 videoHostTime = time;
                 switch (status) {
                     case YT_VIDEO_ENDED:
-                        if (videoUrlList.length > 0) {
-                            currentVideoUrl = videoUrlList.shift();
-                            client.emit('new_video_id', { id: currentVideoUrl });
+                        if (videoRequestList.length > 0) {
+                            var request = videoRequestList.shift();
+                            currentVideoUrl = request.url;
+                            client.emit('new_video_id', { name: request.name, id: currentVideoUrl });
                         }
                         break;
                     case YT_VIDEO_PLAYING:
                         if (hostYTPlayerStatus !== status) {
-                            client.emit("host_video_progress", { time: videoHostTime, status: YT_VIDEO_PLAYING });
-                        } 
+                            client.emit("host_video_progress", { time: videoHostTime, status: YT_VIDEO_PLAYING, hostId: videoHostId });
+                        }
                         break;
-                    case YT_VIDEO_PAUSED: client.emit("host_video_progress", { time: videoHostTime, status: YT_VIDEO_PAUSED }); break;
+                    case YT_VIDEO_PAUSED: client.emit("host_video_progress", { time: videoHostTime, status: YT_VIDEO_PAUSED, hostId: videoHostId }); break;
                     default: break;
                 }
                 hostYTPlayerStatus = status;
                 console.log('Host progress: ' + time);
             } else {
-                if (Math.abs(videoHostTime - time) > forceSyncThreshold) {
+                if (status !== hostYTPlayerStatus) {
+                    socket.emit("host_video_progress", { time: videoHostTime, status: hostYTPlayerStatus, hostId: videoHostId });
+                }
+                else if (Math.abs(videoHostTime - time) > forceSyncThreshold) {
                     socket.emit("host_video_progress", { time: videoHostTime, status: status, hostId: videoHostId });
                 }
             }
@@ -146,6 +147,18 @@ mongo.connect(mongodbAddress, function (error, db) {
         socket.on('user_host_request', function (payload) {
             videoHostId = socket.id;
             socket.emit("host_video_progress", { time: payload.time, status: payload.status, hostId: videoHostId });
+        });
+
+        // Request to skip
+        socket.on('user_skip_request', function (payload) {
+            console.log(socket.id + ' ' + videoHostId);
+            if (socket.id === videoHostId) {
+                if (videoRequestList.length > 0) {
+                    var request = videoRequestList.shift();
+                    currentVideoUrl = request.url;
+                    client.emit('new_video_id', { name: request.name, id: currentVideoUrl });
+                }
+            }
         });
     });
 });

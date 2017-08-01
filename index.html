@@ -4,239 +4,301 @@
     <title> EXP cinema</title>
     <link rel="stylesheet" href="css/index.css">
 </head>
-Eric Bachman is a Lying Fuck
-<div class="row">
+
 <body>
-    <div class="chat">
-        <input type="text" class="chat-name" placeholder="Enter your name" value="">
-        <div class="chat-messages"></div>
-        <textarea class="chat-textarea" rows="10"placeholder="Type your message"></textarea>
-        <div class="chat-status">
-            Status: <span>Idle</span>
-        </div>
-    </div>
-    <div class="video">
+    <div class="client">
         <button id="host-button" type="button">Become host</button>
         <div class="host-id"></div>
-        <div class="video-playlist"></div>
-        <input class="video-input" type="text" placeholder="Enter youtube url">
-        <div id="video-placeholder" ></div>
+    </div>
+    <div class="content">
+        <div class="video">
+            <div class="video-info">
+                <div class="video-users"></div>
+                <div class="video-playlist"></div>
+            </div>
+            <div class="video-manipulation">
+                <div class="video-banner">Now Playing:</div>
+                <button id="video-button-skip">Skip (Host only)</button>
+                <button id="video-button-video-status">Playing</button>
+            </div>
+
+            <div id="video-placeholder"></div>
+        </div>
+        <div class="chat">
+            <input type="text" class="chat-name" placeholder="Enter your name" value="">
+            <div class="chat-messages"></div>
+            <textarea class="chat-textarea" rows="10" placeholder="Enter here"></textarea>
+            <div class="chat-switch-buttons">
+                <button id="chat-button-use-chat" type="button">Chat</button>
+                <button id="chat-button-use-console" type="button">Console</button>
+            </div>
+
+            <div class="chat-status">
+                Status: <span>Idle</span>
+            </div>
+        </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
-</div>
-    <script>
-        // Video Player
-        var YTPlayer;
-        var YTPlayerIsReady = false;
-        var YTPlayerStatus;
+</body>
+<script>
+    // Video Player
+    var YTPlayer;
+    var YTPlayerIsReady = false;
+    var YTPlayerStatus;
 
-        var tag = document.createElement('script');
+    var tag = document.createElement('script');
 
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        var getNode = function (s) {
-            return document.querySelector(s);
-        },
-            status = getNode('.chat-status span'),
-            messages = getNode('.chat-messages'),
-            textarea = getNode('.chat textarea'),
-            chatName = getNode('.chat-name'),
-            statusDefault = status.textContent,
-            playlist = getNode('.video-playlist'),
-            playlistInput = getNode('.video-input'),
-            hostId = getNode('.host-id');
+    var getNode = function (s) {
+        return document.querySelector(s);
+    },
+        status = getNode('.chat-status span'),
+        messages = getNode('.chat-messages'),
+        textarea = getNode('.chat textarea'),
+        chatName = getNode('.chat-name'),
+        statusDefault = status.textContent,
+        playlist = getNode('.video-playlist'),
+        videoTitle = getNode('.video-banner'),
+        hostId = getNode('.host-id');
 
-        // Establish socket
-        try {
-            var socket = io.connect();
-        } catch (e) {
-            throw e;
+    // Establish socket
+    try {
+        var socket = io.connect();
+    } catch (e) {
+        throw e;
+    }
+
+    // Status for texting/video
+    var setStatus = function (s) {
+        status.textContent = s;
+        if (s !== statusDefault) {
+            var delay = setTimeout(function () {
+                setStatus(statusDefault);
+                clearInterval(delay);
+            }, 5000);
         }
+    };
 
-        // Status for texting/video
-        var setStatus = function (s) {
-            status.textContent = s;
-            if (s !== statusDefault) {
-                var delay = setTimeout(function () {
-                    setStatus(statusDefault);
-                    clearInterval(delay);
-                }, 5000);
-            }
-        };
-
-        // Test button
-        document.getElementById("host-button").onclick = function () {
-            if (YTPlayerIsReady) {
-                socket.emit('user_host_request', { time: YTPlayer.getCurrentTime, status: YTPlayerStatus });
-            } else {
-                setStatus('Your player is not ready');
-            }
-        };
-
-        // Emit socket after api is ready
-        function onYouTubeIframeAPIReady() {
-            if (socket != null) {
-                socket.emit('user_youtube_player_status', { status: 1 });
-                console.log('Youtube player loaded');
-            }
-        };
-
-        // Repeatedly send local video progress
-        function sendVideoProgress() {
-            if (YTPlayerIsReady) {
-                if (socket !== undefined && YTPlayerStatus !== YT.PlayerState.PAUSED) {
-                    socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
-                }
-                var delay = setTimeout(function () {
-                    sendVideoProgress();
-                    clearInterval(delay);
-                }, 1000);
-            }
-        };
-
-        function onPlayerReady(event) {
-            event.target.playVideo();
-            YTPlayerStatus = 1;
-            YTPlayerIsReady = true;
-            sendVideoProgress();
+    // Test button
+    document.getElementById("host-button").onclick = function () {
+        if (YTPlayerIsReady) {
+            socket.emit('user_host_request', { time: YTPlayer.getCurrentTime, status: YTPlayerStatus });
+        } else {
+            setStatus('Your player is not ready');
         }
+    };
 
-        function onPlayerStateChange(event) {
-            if (event.data != YTPlayerStatus && event.data !== 3) {
-                console.log(event.data);
-                YTPlayerStatus = event.data;
+    // Configure chat and console button
+    var isUsingConsole = false;
+    var chatButton = document.getElementById("chat-button-use-chat");
+    var consoleButton = document.getElementById("chat-button-use-console");
+    chatButton.style.background = '#009DDC';
+    consoleButton.style.background = '#EEE';
+    chatButton.onclick = function () {
+        isUsingConsole = false;
+        textarea.setAttribute('placeholder', 'Enter chat message');
+        chatButton.style.background = '#009DDC';
+        consoleButton.style.background = '#EEE';
+    };
+    consoleButton.onclick = function () {
+        isUsingConsole = true;
+        textarea.setAttribute('placeholder', 'Enter console command');
+        chatButton.style.background = '#EEE';
+        consoleButton.style.background = '#009DDC';
+    };
+
+    // Status Indicator
+    var videoStatus = document.getElementById('video-button-video-status');
+
+    // Skip button
+    skipButton = document.getElementById('video-button-skip').onclick = function () {
+        socket.emit('user_skip_request', 1);
+    };
+
+    // Emit socket after api is ready
+    function onYouTubeIframeAPIReady() {
+        if (socket != null) {
+            socket.emit('user_youtube_player_status', { status: 1 });
+            console.log('Youtube player loaded');
+        }
+    };
+
+    // Repeatedly send local video progress
+    function sendVideoProgress() {
+        if (YTPlayerIsReady) {
+            if (socket !== undefined && YTPlayerStatus !== YT.PlayerState.PAUSED) {
                 socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
             }
+            var delay = setTimeout(function () {
+                sendVideoProgress();
+                clearInterval(delay);
+            }, 1000);
         }
+    };
 
-        function stopVideo() {
-            YTPlayer.stopVideo();
+    function onPlayerReady(event) {
+        event.target.playVideo();
+        YTPlayerStatus = 1;
+        YTPlayerIsReady = true;
+        videoTitle.textContent = 'Now Playing: ' + YTPlayer.getVideoData().title;
+        sendVideoProgress();
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data != YTPlayerStatus && event.data !== YT.PlayerState.BUFFERING) {
+            console.log(event.data);
+            socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: event.data });
         }
+    }
 
-        // Main body
-        (function () {
+    function stopVideo() {
+        YTPlayer.stopVideo();
+    }
 
-            setStatus('Testing...');
+    // Main body
+    (function () {
 
-            // Socket events
-            if (socket != undefined) {
-                console.log('ok');
+        setStatus('Testing...');
 
-                // Listen for new chat message
-                socket.on('new_chat_message', function (payload) {
-                    if (payload.length) {
-                        // Loop through messages
-                        for (var x = 0; x < payload.length; x = x + 1) {
-                            var message = document.createElement('div');
-                            message.setAttribute('class', 'chat-message');
-                            message.textContent = payload[x].name + ': ' + payload[x].message;
+        // Socket events
+        if (socket != undefined) {
+            console.log('ok');
 
-                            // Append
-                            messages.appendChild(message);
-                            messages.insertBefore(message, messages.firstChild);
-                        }
+            // Listen for new chat message
+            socket.on('new_chat_message', function (payload) {
+                if (payload.length) {
+                    // Loop through messages
+                    for (var x = 0; x < payload.length; x = x + 1) {
+                        var message = document.createElement('div');
+                        message.setAttribute('class', 'chat-message');
+                        message.textContent = payload[x].name + ': ' + payload[x].message;
+
+                        // Append
+                        messages.appendChild(message);
+                        messages.insertBefore(message, messages.firstChild);
                     }
-                });
+                }
+            });
 
-                // Listen for new video url
-                socket.on('new_video_url', function (payload) {
-                    console.log(payload);
-                    if (payload.length) {
-                        // Loop through messages
-                        for (var x = 0; x < payload.length; x = x + 1) {
-                            var url = document.createElement('div');
-                            url.setAttribute('class', 'new_video_url');
-                            url.textContent = payload[x].url;
+            // Listen for new video url
+            socket.on('new_video_url', function (payload) {
+                console.log(payload);
+                if (payload.length) {
+                    // Loop through messages
+                    for (var x = 0; x < payload.length; x = x + 1) {
+                        var url = document.createElement('div');
+                        url.setAttribute('class', 'new_video_url');
+                        url.setAttribute('margin', '5px');
+                        url.textContent = payload[x].name + ' wants to play: ' + payload[x].url;
 
-                            // Append
-                            playlist.appendChild(url);
-                            playlist.insertBefore(url, playlist.firstChild);
-                        }
+                        // Append
+                        playlist.appendChild(url);
+                        playlist.insertBefore(url, playlist.firstChild);
                     }
-                });
+                }
+            });
 
-                // Listen for a status
-                socket.on('status', function (payload) {
-                    setStatus((typeof payload === 'object') ? payload.message : payload);
-                    if (payload.clear === true) {
-                        textarea.value = '';
-                    }
-                });
+            // Listen for a status
+            socket.on('status', function (payload) {
+                setStatus((typeof payload === 'object') ? payload.message : payload);
+                if (payload.clear === true) {
+                    textarea.value = '';
+                }
+            });
 
-                // Listen for chat input
-                textarea.addEventListener('keydown', function (event) {
-                    var self = this,
-                        name = chatName.value;
-                    if (event.which === 13 && event.shiftKey === false) {
+            // Listen for chat/console input
+            textarea.addEventListener('keydown', function (event) {
+                var self = this,
+                    name = chatName.value;
+                if (event.which === 13 && event.shiftKey === false) {
+                    if (isUsingConsole) {
+                        socket.emit('user_video_url', {
+                            name: name,
+                            url: self.value
+                        });
+                    } else {
                         socket.emit('user_chat_message', {
                             name: name,
                             message: self.value
                         });
                     }
-                });
+                }
+            });
 
-                // Listen for url input
-                playlistInput.addEventListener('keydown', function (event) {
-                    var self = this,
-                        name = chatName.value;
-                    if (event.which === 13 && event.shiftKey === false) {
-                        socket.emit('user_video_url', {
-                            name: name,
-                            url: self.value
-                        })
+            // Listen for generating video
+            var self = this;
+            socket.on('new_video_id', function (payload) {
+                console.log('new player');
+                if (YTPlayer !== undefined) {
+                    YTPlayer.destroy();
+                    YTPlayerIsReady = false;
+                }
+                self.YTPlayer = new YT.Player('video-placeholder', {
+                    height: '390',
+                    width: '640',
+                    videoId: payload.id,
+                    playerVars: { 'autoplay': 1, 'controls': 1 },
+                    events: {
+                        'onReady': self.onPlayerReady,
+                        'onStateChange': self.onPlayerStateChange
                     }
                 });
+                if(playlist.firstChild){
+                    playlist.removeChild(playlist.firstChild);
+                }
+            });
 
-                // Listen for generating video
-                var self = this;
-                socket.on('new_video_id', function (payload) {
-                    console.log('new player');
-                    if (YTPlayer !== undefined) {
-                        YTPlayer.destroy();
-                        YTPlayerIsReady = false;
-                    }
-                    self.YTPlayer = new YT.Player('video-placeholder', {
-                        height: '390',
-                        width: '640',
-                        videoId: payload.id,
-                        playerVars: { 'autoplay': 1, 'controls': 1 },
-                        events: {
-                            'onReady': self.onPlayerReady,
-                            'onStateChange': self.onPlayerStateChange
+            // Listen for force sync
+            socket.on('host_video_progress', function (payload) {
+                console.log('Force sync recieved' + payload.time + 'status: ' + payload.status);
+                hostId.textContent = payload.hostId;
+                if (!YTPlayerIsReady) {
+                    return;
+                }
+                switch (payload.status) {
+                    case YT.PlayerState.PLAYING:
+                        if (YTPlayerStatus !== 1) {
+                            YTPlayer.playVideo();
+                            YTPlayerStatus = 1;
                         }
-                    });
-                });
+                        break;
+                    case YT.PlayerState.PAUSED:
+                        YTPlayer.pauseVideo();
+                        YTPlayerStatus = 2;
+                        console.log('paused');
+                        break;
+                    default: break;
+                }
+                switch (YTPlayerStatus) {
+                    case YT.PlayerState.PLAYING:
+                        videoStatus.innerHTML = "PLAYING";
+                        videoStatus.style.background = "#0f0";
+                        break;
+                    case YT.PlayerState.PAUSED:
+                        videoStatus.innerHTML = "PAUSED";
+                        videoStatus.style.background = "#f00";
+                        break;
+                    case YT.PlayerState.ENDED:
+                        videoStatus.innerHTML = "ENDED";
+                        videoStatus.style.background = "#fff";
+                        break;
+                    case YT.PlayerState.BUFFERING:
+                        videoStatus.innerHTML = "BUFFERING";
+                        videoStatus.style.background = "#00f";
+                        break;
+                    default: break;
+                }
+                if (YTPlayerIsReady) {
+                    YTPlayer.seekTo(payload.time, true);
+                }
+            });
+        }
+    })();
 
-                // Listen for force sync
-                socket.on('host_video_progress', function (payload) {
-                    console.log('Force sync recieved' + payload.time + 'status: ' + payload.status);
-                    hostId.textContent = payload.hostId;
-                    if (!YTPlayerIsReady) {
-                        return;
-                    }
-                    switch (payload.status) {
-                        case 1:
-                            if (YTPlayerStatus !== 1) {
-                                YTPlayer.playVideo();
-                                YTPlayerStatus = 1;
-                            }
-                            break;
-                        case 2:
-                            YTPlayer.pauseVideo();
-                            YTPlayerStatus = 2;
-                            console.log('paused');
-                            break;
-                        default: break;
-                    }
-                    if (YTPlayerIsReady) {
-                        YTPlayer.seekTo(payload.time, true);
-                    }
-                });
-            }
-        })();
-    </script>
+</script>
 </body>
 </div>
 
