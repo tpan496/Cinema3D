@@ -143,7 +143,7 @@
         event.target.playVideo();
         YTPlayerStatus = 1;
         YTPlayerIsReady = true;
-        videoTitle.textContent = 'Now Playing: ' + YTPlayer.getVideoData().title;
+        videoTitle.textContent = 'Now Playing: ' + YTPlayer.getVideoData().title.substring(0,40);
         sendVideoProgress();
     }
 
@@ -190,7 +190,7 @@
                     // Loop through messages
                     for (var x = 0; x < payload.length; x = x + 1) {
                         var url = document.createElement('div');
-                        url.setAttribute('class', 'new_video_url');
+                        url.setAttribute('class', 'video-url');
                         url.setAttribute('margin', '5px');
                         url.textContent = payload[x].name + ' wants to play: ' + payload[x].url;
 

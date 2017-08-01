@@ -78,6 +78,7 @@ body {
 
 .video-users,
 .video-playlist{
+    vertical-align: text-top;
     display: inline-block;
     overflow-y: scroll;
     height: 150px;
