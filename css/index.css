@@ -4,8 +4,13 @@ input {
     font: 13px;
 }
 
+body {
+    background-color: "#809AAD";
+}
+
 .chat{
-    max-width: 300px;
+    width: 300px;
+    float: right;
 }
 
 .chat-messages,
@@ -19,11 +24,14 @@ input {
     height: 300px;
     overflow-y: scroll;
     margin-top: 10px;
+    background-color:#A0C4DE;
 }
 
 .chat-name{
     width: 100%;
+    height:75px;
     padding: 10px;
+    background-color:#A0C4DE;
 }
 
 .chat textarea {
@@ -31,6 +39,7 @@ input {
     padding: 10px;
     border-top: 0;
     max-width: 100%;
+    background-color:#A0C4DE;
 }
 
 .chat-status {
@@ -38,7 +47,8 @@ input {
 }
 
 .video {
-    max-width: 300px;
+    width: 300px;
+    float: right;
 }
 
 .video-playlist,
@@ -51,9 +61,11 @@ input {
     height: 200px;
     overflow-y: scroll;
     margin-top: 10px;
+    background-color:#A0C4DE;
 }
 
 .video-input{
     width: 100%;
     height: 50px;
+    background-color:#A0C4DE;
 }
