@@ -59,7 +59,7 @@
         return document.querySelector(s);
     },
         body = getNode('.main');
-    status = getNode('.chat-status span'),
+        status = getNode('.chat-status span'),
         messages = getNode('.chat-messages'),
         textarea = getNode('.chat textarea'),
         chatName = getNode('.chat-name'),
@@ -155,7 +155,6 @@
     function onPlayerStateChange(event) {
         localPlayerStatus = event.data;
         if (event.data != YTPlayerStatus && event.data !== YT.PlayerState.BUFFERING) {
-            console.log(event.data);
             socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: event.data });
         }
     }
@@ -171,7 +170,6 @@
 
         // Socket events
         if (socket != undefined) {
-            console.log('ok');
 
             // Listen for new user
             socket.on('new_user', function (payload) {
@@ -228,14 +226,13 @@
 
             // Listen for new video url
             socket.on('new_video_url', function (payload) {
-                console.log(payload);
                 if (payload.length) {
                     // Loop through messages
                     for (var x = 0; x < payload.length; x = x + 1) {
                         var url = document.createElement('div');
                         url.setAttribute('class', 'video-url');
                         url.setAttribute('margin', '5px');
-                        url.textContent = payload[x].name + ' wants to play: ' + payload[x].url;
+                        url.textContent = payload[x].name + ' wants to play: ' + payload[x].command;
 
                         // Append
                         playlist.appendChild(url);
@@ -247,7 +244,6 @@
             // Listen for a status
             socket.on('status', function (payload) {
                 setStatus((typeof payload === 'object') ? payload.message : payload);
-                console.log('status: '+payload);
                 if (payload.clear) {
                     textarea.value = '';
                 }
