@@ -8,6 +8,7 @@ var port = process.env.PORT || 8080;
 const mongodbAddress = 'mongodb://tpan496:trollNoob971006!@exp-server-shard-00-00-8ecae.mongodb.net:27017,exp-server-shard-00-01-8ecae.mongodb.net:27017,exp-server-shard-00-02-8ecae.mongodb.net:27017/exp-server?ssl=true&replicaSet=exp-server-shard-0&authSource=admin'
 const forceSyncThreshold = 3; // synchronize check frequency
 const whitespacePattern = /^\s*$/;
+const YT_VIDEO_UNSTARTED = -1;
 const YT_VIDEO_ENDED = 0;
 const YT_VIDEO_PLAYING = 1;
 const YT_VIDEO_PAUSED = 2;
@@ -35,7 +36,11 @@ mongo.connect(mongodbAddress, function (error, db) {
     if (error) throw error;
     client.on('connection', function (socket) {
         console.log('New client: ' + socket.id);
-        clientIdList.push(socket.id);
+
+        // New user
+        client.emit('new_user', [{ id: socket.id }]);
+        socket.emit('new_user', clientIdList);
+        clientIdList.push({id: socket.id});
 
         // Get chat history and video playlist from database
         var chatMessages = db.collection('chat_messages'),
@@ -74,26 +79,44 @@ mongo.connect(mongodbAddress, function (error, db) {
         });
 
         // Listen for new video url
-        socket.on('user_video_url', function (payload) {
+        socket.on('user_console_command', function (payload) {
             var name = payload.name,
-                url = payload.url;
+                command = payload.command;
+            if(command == ":popcorn"){
+                client.emit('popcorn', 1);
+                sendStatus({ message: 'Message sent', clear: true });
+                return;
+            }
 
-            if (whitespacePattern.test(name) || whitespacePattern.test(url)) {
+            if(command == ":pogchamp"){
+                client.emit('pogchamp', 1);
+                sendStatus({ message: 'Message sent', clear: true });
+                return;
+            }
+
+            if(command == ":huaji"){
+                client.emit('huaji', 1);
+                sendStatus({ message: 'Message sent', clear: true });
+                return;
+            }
+
+            if (whitespacePattern.test(name) || whitespacePattern.test(command)) {
                 sendStatus('Valid url is required');
             } else {
 
                 // Throw url into playlist
                 client.emit('new_video_url', [payload]);
-                videoRequestList.push({ name: name, url: url });
+                videoRequestList.push({ name: name, url: command });
 
                 // If no video is playing now
                 if (hostYTPlayerStatus == YT_VIDEO_ENDED) {
                     videoRequestList.shift();
-                    currentVideoUrl = url;
+                    currentVideoUrl = command;
                     client.emit('new_video_id', { name: name, id: currentVideoUrl });
+                    hostYTPlayerStatus = 0;
                 }
-                console.log(url);
-                sendStatus({ message: 'Url sent', clear: true });
+                console.log(command);
+                sendStatus({ message: 'Command sent', clear: true });
             }
         });
 
@@ -146,12 +169,11 @@ mongo.connect(mongodbAddress, function (error, db) {
         // Request to be host
         socket.on('user_host_request', function (payload) {
             videoHostId = socket.id;
-            socket.emit("host_video_progress", { time: payload.time, status: payload.status, hostId: videoHostId });
+            client.emit("host_video_progress", { time: payload.time, status: payload.status, hostId: videoHostId });
         });
 
         // Request to skip
         socket.on('user_skip_request', function (payload) {
-            console.log(socket.id + ' ' + videoHostId);
             if (socket.id === videoHostId) {
                 if (videoRequestList.length > 0) {
                     var request = videoRequestList.shift();
@@ -159,6 +181,13 @@ mongo.connect(mongodbAddress, function (error, db) {
                     client.emit('new_video_id', { name: request.name, id: currentVideoUrl });
                 }
             }
+        });
+
+        // User disconnect
+        socket.on('disconnect', function(){
+            var index = clientIdList.indexOf({id: socket.id});
+            clientIdList.splice(index, 1);
+            client.emit('user_list_update', clientIdList);
         });
     });
 });

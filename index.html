@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="css/index.css">
 </head>
 
-<body>
+<body class="main">
     <div class="client">
         <button id="host-button" type="button">Become host</button>
         <div class="host-id"></div>
@@ -45,6 +45,9 @@
     var YTPlayer;
     var YTPlayerIsReady = false;
     var YTPlayerStatus;
+    var localPlayerStatus;
+    var prevCommand;
+    var curCommand;
 
     var tag = document.createElement('script');
 
@@ -55,12 +58,14 @@
     var getNode = function (s) {
         return document.querySelector(s);
     },
-        status = getNode('.chat-status span'),
+        body = getNode('.main');
+    status = getNode('.chat-status span'),
         messages = getNode('.chat-messages'),
         textarea = getNode('.chat textarea'),
         chatName = getNode('.chat-name'),
         statusDefault = status.textContent,
         playlist = getNode('.video-playlist'),
+        userlist = getNode('.video-users'),
         videoTitle = getNode('.video-banner'),
         hostId = getNode('.host-id');
 
@@ -82,7 +87,7 @@
         }
     };
 
-    // Test button
+    // Request to be host
     document.getElementById("host-button").onclick = function () {
         if (YTPlayerIsReady) {
             socket.emit('user_host_request', { time: YTPlayer.getCurrentTime, status: YTPlayerStatus });
@@ -130,7 +135,7 @@
     function sendVideoProgress() {
         if (YTPlayerIsReady) {
             if (socket !== undefined && YTPlayerStatus !== YT.PlayerState.PAUSED) {
-                socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: YTPlayerStatus });
+                socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: localPlayerStatus });
             }
             var delay = setTimeout(function () {
                 sendVideoProgress();
@@ -143,11 +148,12 @@
         event.target.playVideo();
         YTPlayerStatus = 1;
         YTPlayerIsReady = true;
-        videoTitle.textContent = 'Now Playing: ' + YTPlayer.getVideoData().title.substring(0,40);
+        videoTitle.textContent = 'Now Playing: ' + YTPlayer.getVideoData().title.substring(0, 40);
         sendVideoProgress();
     }
 
     function onPlayerStateChange(event) {
+        localPlayerStatus = event.data;
         if (event.data != YTPlayerStatus && event.data !== YT.PlayerState.BUFFERING) {
             console.log(event.data);
             socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: event.data });
@@ -166,6 +172,43 @@
         // Socket events
         if (socket != undefined) {
             console.log('ok');
+
+            // Listen for new user
+            socket.on('new_user', function (payload) {
+                if (payload.length) {
+                    // Loop through messages
+                    for (var x = 0; x < payload.length; x = x + 1) {
+                        var user = document.createElement('div');
+                        user.setAttribute('class', 'user');
+                        user.textContent = payload[x].id;
+
+                        // Append
+                        userlist.appendChild(user);
+                        userlist.insertBefore(user, userlist.firstChild);
+                    }
+                }
+            });
+
+            // Listen for user list update
+            socket.on('user_list_update', function (payload) {
+                // Remove everything from userlist
+                while (userlist.firstChild) {
+                    userlist.removeChild(userlist.firstChild);
+                }
+
+                if (payload.length) {
+                    // Loop through messages
+                    for (var x = 0; x < payload.length; x = x + 1) {
+                        var user = document.createElement('div');
+                        user.setAttribute('class', 'user');
+                        user.textContent = payload[x].id;
+
+                        // Append
+                        userlist.appendChild(user);
+                        userlist.insertBefore(user, userlist.firstChild);
+                    }
+                }
+            });
 
             // Listen for new chat message
             socket.on('new_chat_message', function (payload) {
@@ -204,7 +247,8 @@
             // Listen for a status
             socket.on('status', function (payload) {
                 setStatus((typeof payload === 'object') ? payload.message : payload);
-                if (payload.clear === true) {
+                console.log('status: '+payload);
+                if (payload.clear) {
                     textarea.value = '';
                 }
             });
@@ -215,9 +259,11 @@
                     name = chatName.value;
                 if (event.which === 13 && event.shiftKey === false) {
                     if (isUsingConsole) {
-                        socket.emit('user_video_url', {
+                        prevCommand = self.value;
+                        curCommand = '';
+                        socket.emit('user_console_command', {
                             name: name,
-                            url: self.value
+                            command: self.value
                         });
                     } else {
                         socket.emit('user_chat_message', {
@@ -225,6 +271,11 @@
                             message: self.value
                         });
                     }
+                }else if(event.which == 38 && isUsingConsole){
+                    curCommand = textarea.value;
+                    textarea.value = prevCommand;
+                }else if(event.which == 40 && isUsingConsole){
+                    textarea.value = curCommand;
                 }
             });
 
@@ -246,14 +297,14 @@
                         'onStateChange': self.onPlayerStateChange
                     }
                 });
-                if(playlist.firstChild){
+                if (playlist.firstChild) {
                     playlist.removeChild(playlist.firstChild);
                 }
             });
 
             // Listen for force sync
             socket.on('host_video_progress', function (payload) {
-                console.log('Force sync recieved' + payload.time + 'status: ' + payload.status);
+                console.log('Force sync recieved at ' + payload.time + ' status: ' + payload.status);
                 hostId.textContent = payload.hostId;
                 if (!YTPlayerIsReady) {
                     return;
@@ -294,6 +345,81 @@
                 if (YTPlayerIsReady) {
                     YTPlayer.seekTo(payload.time, true);
                 }
+            });
+
+            // Popcorn
+            socket.on('popcorn', function (payload) {
+                var sprite = document.createElement('img');
+                sprite.setAttribute('src', 'image/popcorn.png');
+                sprite.style.position = "absolute";
+                sprite.style.top = window.innerHeight * Math.random();
+                sprite.style.left = window.innerWidth * Math.random();
+                sprite.width = 60;
+                sprite.height = 100;
+                body.appendChild(sprite);
+                var op = 10;  // initial opacity
+                var delay = setTimeout(function () {
+                    var timer = setInterval(function () {
+                        if (op <= 0) {
+                            body.removeChild(sprite);
+                            clearInterval(timer);
+                        }
+                        sprite.style.opacity = op;
+                        sprite.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                        op -= op * 0.1;
+                    }, 10);
+                    clearInterval(delay);
+                }, 2000);
+            });
+
+            // Huaji
+            socket.on('huaji', function (payload) {
+                var sprite = document.createElement('img');
+                sprite.setAttribute('src', 'image/huaji.png');
+                sprite.style.position = "absolute";
+                sprite.style.top = window.innerHeight * Math.random();
+                sprite.style.left = window.innerWidth * Math.random();
+                sprite.width = 100;
+                sprite.height = 100;
+                body.appendChild(sprite);
+                var op = 10;  // initial opacity
+                var delay = setTimeout(function () {
+                    var timer = setInterval(function () {
+                        if (op <= 0) {
+                            body.removeChild(sprite);
+                            clearInterval(timer);
+                        }
+                        sprite.style.opacity = op;
+                        sprite.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                        op -= op * 0.1;
+                    }, 10);
+                    clearInterval(delay);
+                }, 2000);
+            });
+
+            // Pogchamp
+            socket.on('pogchamp', function (payload) {
+                var sprite = document.createElement('img');
+                sprite.setAttribute('src', 'image/pogchamp.png');
+                sprite.style.position = "absolute";
+                sprite.style.top = window.innerHeight * Math.random();
+                sprite.style.left = window.innerWidth * Math.random();
+                sprite.width = 120;
+                sprite.height = 100;
+                body.appendChild(sprite);
+                var op = 10;  // initial opacity
+                var delay = setTimeout(function () {
+                    var timer = setInterval(function () {
+                        if (op <= 0) {
+                            body.removeChild(sprite);
+                            clearInterval(timer);
+                        }
+                        sprite.style.opacity = op;
+                        sprite.style.filter = 'alpha(opacity=' + op * 100 + ")";
+                        op -= op * 0.1;
+                    }, 10);
+                    clearInterval(delay);
+                }, 2000);
             });
         }
     })();
