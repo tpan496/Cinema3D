@@ -26,7 +26,7 @@ var socket = require('socket.io')({
     transports: ['websocket']
 });
 httpServer.listen(port);
-app.use(express.static('../frontend'));
+app.use(express.static('frontend'));
 
 // Establish socket listener
 var client = socket.listen(httpServer);
