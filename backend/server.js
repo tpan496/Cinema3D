@@ -1,7 +1,7 @@
 var mongo = require('mongodb').MongoClient;
 var express = require('express');
 var app = require('express')();
-var server = require('http').createServer(app);
+var httpServer = require('http').createServer(app);
 var port = process.env.PORT || 8080;
 
 // Consts
@@ -25,11 +25,14 @@ var videoHostTime;
 var socket = require('socket.io')({
     transports: ['websocket']
 });
-server.listen(port);
-app.use(express.static(__dirname));
+httpServer.listen(port);
+app.use(express.static('../frontend'));
 
 // Establish socket listener
-var client = socket.listen(server);
+var client = socket.listen(httpServer);
+
+// Handlers
+var chat = require('./event_handler/chat.js');
 
 // Connect to mongodb and respond to client events
 mongo.connect(mongodbAddress, function (error, db) {
