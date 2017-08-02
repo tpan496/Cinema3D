@@ -77,7 +77,7 @@ mongo.connect(mongodbAddress, function (error, db) {
                     // Emit latest messages
                     client.emit('new_chat_message', [payload]);
                     sendStatus({ message: 'Message sent', clear: true });
-                })
+                });
             }
         });
 
