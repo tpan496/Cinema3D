@@ -50,7 +50,7 @@ mongo.connect(mongodbAddress, function (error, db) {
             };
 
         // Display history messages to client
-        chatMessages.find().limit(100).sort({ _id: 1 }).toArray(function (error, result) {
+        chatMessages.find().skip(chatMessages.count - 100).toArray(function (error, result) {
             if (error) throw error;
             console.log(result);
             socket.emit('new_chat_message', result);
