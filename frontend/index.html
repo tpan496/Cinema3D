@@ -362,7 +362,7 @@
                         }
                         sprite.style.opacity = op;
                         sprite.style.filter = 'alpha(opacity=' + op * 100 + ")";
-                        op -= op * 0.1;
+                        op -= 0.05;
                     }, 10);
                     clearInterval(delay);
                 }, 2000);
@@ -387,7 +387,7 @@
                         }
                         sprite.style.opacity = op;
                         sprite.style.filter = 'alpha(opacity=' + op * 100 + ")";
-                        op -= op * 0.1;
+                        op -= 0.05;
                     }, 10);
                     clearInterval(delay);
                 }, 2000);
@@ -403,7 +403,7 @@
                 sprite.width = 120;
                 sprite.height = 100;
                 body.appendChild(sprite);
-                var op = 10;  // initial opacity
+                var op = 1;  // initial opacity
                 var delay = setTimeout(function () {
                     var timer = setInterval(function () {
                         if (op <= 0) {
@@ -412,7 +412,7 @@
                         }
                         sprite.style.opacity = op;
                         sprite.style.filter = 'alpha(opacity=' + op * 100 + ")";
-                        op -= op * 0.1;
+                        op -= 0.05;
                     }, 10);
                     clearInterval(delay);
                 }, 2000);
