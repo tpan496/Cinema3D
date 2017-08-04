@@ -1,3 +1,0 @@
-function listen(socket){
-	
-}

@@ -135,7 +135,7 @@
     function sendVideoProgress() {
         if (YTPlayerIsReady) {
             if (socket !== undefined && YTPlayerStatus !== YT.PlayerState.PAUSED) {
-                socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: localPlayerStatus });
+                socket.emit('user_youtube_video_progress', { time: YTPlayer.getCurrentTime(), status: localPlayerStatus });
             }
             var delay = setTimeout(function () {
                 sendVideoProgress();
@@ -155,7 +155,7 @@
     function onPlayerStateChange(event) {
         localPlayerStatus = event.data;
         if (event.data != YTPlayerStatus && event.data !== YT.PlayerState.BUFFERING) {
-            socket.emit('user_video_progress', { time: YTPlayer.getCurrentTime(), status: event.data });
+            socket.emit('user_youtube_video_progress', { time: YTPlayer.getCurrentTime(), status: event.data });
         }
     }
 
@@ -299,7 +299,7 @@
             });
 
             // Listen for force sync
-            socket.on('host_video_progress', function (payload) {
+            socket.on('host_youtube_video_progress', function (payload) {
                 console.log('Force sync recieved at ' + payload.time + ' status: ' + payload.status);
                 hostId.textContent = payload.hostId;
                 if (!YTPlayerIsReady) {
