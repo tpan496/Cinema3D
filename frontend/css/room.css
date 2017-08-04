@@ -1,0 +1,118 @@
+body,
+textarea,
+input {
+    font: 13px;
+}
+
+body {
+    background-color: "#eee";
+    width: 1000px; margin: 0 auto;
+}
+
+#host-button,
+.host-id {
+    display: inline-block;
+}
+
+.content{
+    margin: 5px;
+}
+
+.chat{
+    margin: 5px;
+    vertical-align: text-top;
+    display: inline-block;
+    width: 300px;
+}
+
+.chat-messages,
+.chat-name{
+    border: 1px solid #bbb;
+}
+
+.chat-messages{
+    width: 100%;
+    height: 300px;
+    overflow-y: scroll;
+    margin-top: 10px;
+}
+
+.chat-name{
+    width: 100%;
+    height:75px;
+    padding: 10px;
+    background-color:#A0C4DE;
+}
+
+.chat textarea {
+    width: 100%;
+    padding: 10px;
+    border-top: 0;
+    border: 1px solid #009DDC;
+    max-width: 100%;
+}
+
+.chat-status {
+    color: #bbb;
+}
+
+#chat-button-use-chat,
+#chat-button-use-console{
+    border: none;
+    width: 70px;
+    height: 35px;
+    background: #eee;
+    margin: 0;
+}
+
+#chat-button-use-console{
+    margin-left: -2px;
+}
+
+.video{
+    vertical-align: text-top;
+    margin: 5px;
+    display: inline-block;
+    width: 640px;
+}
+
+.video-users,
+.video-playlist{
+    vertical-align: text-top;
+    display: inline-block;
+    overflow-y: scroll;
+    height: 150px;
+    background-color:#333;
+    color: #fff;
+}
+.video-users{
+    width: 25%;
+}
+
+.video-playlist{
+    width: 74.3%;
+    text-align: center;
+}
+
+.video-banner{
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    vertical-align: middle;
+}
+
+#video-button-skip,
+#video-button-video-status{
+    float: right;
+    height: 40px;
+    width: 100px;
+}
+
+#video-button-video-status{
+    background-color: #0f0;
+}
+
+#video-placeholder{
+    margin-top: 5px;
+    display: inline-block;
+}

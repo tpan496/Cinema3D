@@ -1,4 +1,4 @@
-var socket = require('socket.io')({
+var io = require('socket.io')({
     transports: ['websocket']
 });
 var server = require('./server.js');
@@ -10,7 +10,7 @@ var chat = require('./event_handler/chat.js'),
 	video = require('./event_handler/video.js');
 
 exports.listen = function(httpSever, db){
-	client = socket.listen(httpSever);
+	client = io.listen(httpSever);
 
 	client.on('connection', function(socket){
 		console.log('New client: ' + socket.id);
