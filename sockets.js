@@ -62,7 +62,7 @@ exports.listen = function(httpSever, db){
 
         // Request to be host
         socket.on('user_host_request', function (payload) {
-        	video.listenHostRequest(socket, payload);
+        	video.listenHostRequest(client, socket, payload);
         });
 
         // Request to skip
