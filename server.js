@@ -2,7 +2,7 @@ var mongo = require('mongodb').MongoClient;
 var express = require('express');
 var app = require('express')();
 var httpServer = require('http').createServer(app);
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 3000;
 
 // Only one room, so keeping the host here
 var clientIdList = [];

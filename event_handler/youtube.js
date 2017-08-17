@@ -21,7 +21,7 @@ function listenProgress(client, socket, payload){
             case constants.YT_VIDEO_ENDED:
                 if (server.videoRequestList.length > 0) {
                     var request = server.videoRequestList.shift();
-                    server.currentVideoUrl = request.url;
+                    server.currentVideoUrl = request.command;
                     client.emit('new_video_id', { name: request.name, id: server.currentVideoUrl });
                 }
                 break;
