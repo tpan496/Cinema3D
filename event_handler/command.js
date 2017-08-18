@@ -4,21 +4,24 @@ var constants = require('../constants.js');
 function listen(client, socket, sendStatus, payload) {
     var name = payload.name,
     command = payload.command;
+
+    var sendScreenEmoji = function(s, message){
+        client.emit(s, 1);
+        sendStatus({ message: message, clear: true });
+    };
+
     if(command == ":popcorn"){
-        client.emit('popcorn', 1);
-        sendStatus({ message: 'Pop!', clear: true });
+        sendScreenEmoji('popcorn', 'Pop!');
         return;
     }
 
     if(command == ":pogchamp"){
-        client.emit('pogchamp', 1);
-        sendStatus({ message: 'Pogchamp!', clear: true });
+        sendScreenEmoji('pogchamp', 'Pogchamp!');
         return;
     }
 
     if(command == ":huaji"){
-        client.emit('huaji', 1);
-        sendStatus({ message: ':)', clear: true });
+        sendScreenEmoji('huaji', ':)');
         return;
     }
 
