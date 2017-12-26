@@ -4,12 +4,19 @@
         <title>Select Room</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link href="css/style.css" rel="stylesheet">
+        <!--link href="css/style.css" rel="stylesheet" -->
     </head>
     <body class="channel">
         <div class="channel-title">Rooms</div>
+        <form class="channel-create" method="POST" action="/create-channel">
+            <input type="text" name="roomName" placeholder="Enter room name">
+            <input type="submit" value="Create">
+        </form>
         <div class="channel-list">
             
         </div>
     </body>
+    <script>
+
+    </script>
 </html>
