@@ -7,11 +7,8 @@
 
 <body class="main">
     <div class="client">
-        <button id="host-button" type="button">Become host</button>
+        <button id="host-button" type="button" class="btn btn-primary">Become host</button>
         <div class="host-id"></div>
-        <div>
-            To play video, type the video id of a video in console mode(the text that follows v=in the browser link) like XIjzii9a4Nc
-        </div>
     </div>
     <div class="content">
         <div class="video">
@@ -21,19 +18,19 @@
             </div>
             <div class="video-manipulation">
                 <div class="video-banner">Now Playing:</div>
-                <button id="video-button-skip">Skip (Host only)</button>
-                <button id="video-button-video-status">Playing</button>
+                <button id="video-button-skip" type="button" class="btn btn-warning">Skip</button>
+                <button id="video-button-video-status" class="btn btn-success">Playing</button>
             </div>
 
             <div id="video-placeholder"></div>
         </div>
         <div class="chat">
-            <input type="text" class="chat-name" placeholder="Enter your name" value="">
+            <input type="text" id="chat-name" class="form-control" placeholder="Enter your name" value="">
             <div class="chat-messages"></div>
-            <textarea class="chat-textarea" rows="10" placeholder="Enter here"></textarea>
+            <textarea class="form-control" id="chat-textarea" rows="10" placeholder="Enter here"></textarea>
             <div class="chat-switch-buttons">
-                <button id="chat-button-use-chat" type="button">Chat</button>
-                <button id="chat-button-use-console" type="button">Console</button>
+                <button id="chat-button-use-chat" type="button" class="btn btn-default">Chat</button>
+                <button id="chat-button-use-console" type="button" class="btn btn-default" >Console</button>
             </div>
 
             <div class="chat-status">
@@ -42,6 +39,7 @@
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
 </body>
 <script>
     // Video Player

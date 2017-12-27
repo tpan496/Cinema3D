@@ -12,6 +12,8 @@ body {
 #host-button,
 .host-id {
     display: inline-block;
+    margin-top: 10px;
+    margin-left: 10px;
 }
 
 .content{
@@ -28,6 +30,8 @@ body {
 .chat-messages,
 .chat-name{
     border: 1px solid #bbb;
+    border-radius: 5px;
+    padding: 5px;
 }
 
 .chat-messages{
@@ -41,7 +45,6 @@ body {
     width: 100%;
     height:75px;
     padding: 10px;
-    background-color:#A0C4DE;
 }
 
 .chat textarea {
@@ -50,6 +53,7 @@ body {
     border-top: 0;
     border: 1px solid #009DDC;
     max-width: 100%;
+    height: 200px;
 }
 
 .chat-status {
@@ -58,8 +62,7 @@ body {
 
 #chat-button-use-chat,
 #chat-button-use-console{
-    border: none;
-    width: 70px;
+    width: 75px;
     height: 35px;
     background: #eee;
     margin: 0;
@@ -67,6 +70,7 @@ body {
 
 #chat-button-use-console{
     margin-left: -2px;
+    padding-left: 5px;
 }
 
 .video{
@@ -81,16 +85,22 @@ body {
     vertical-align: text-top;
     display: inline-block;
     overflow-y: scroll;
-    height: 150px;
-    background-color:#333;
-    color: #fff;
+    height: 140px;
+    background-color:rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+    padding: 5px;
+    margin-bottom: 10px;
+    border: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    border-color: #bbb;
 }
 .video-users{
     width: 25%;
 }
 
 .video-playlist{
-    width: 74.3%;
+    width: 74%;
     text-align: center;
 }
 
@@ -106,10 +116,12 @@ body {
     float: right;
     height: 40px;
     width: 100px;
+    margin-left: 5px;
 }
 
 #video-button-video-status{
     background-color: #0f0;
+    -webkit-text-fill-color: black;
 }
 
 #video-placeholder{
