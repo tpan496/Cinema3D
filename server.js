@@ -23,7 +23,7 @@ var httpServer = require('http').createServer(app);
 // Only one room, so keeping the host here
 var clientIdList = [];
 var videoRequestList = [];
-var currentVideoUrl = 'XIjzii9a4Nc'; // default video
+var currentVideoUrl = 'yIDa8sIWeW0'; // default video
 var hostYTPlayerStatus;
 var videoHostId;
 var videoHostTime;
