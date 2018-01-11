@@ -91,6 +91,11 @@ exports.listen = function (httpSever, db) {
         socket.on('user_3d_position', function (payload) {
             client.emit('user_3d_moved', { id: socket.id, x: payload.x, y: payload.y, z: payload.z })
         });
+
+        // Player throw ball
+        socket.on('user_3d_throw_ball', function(payload){
+            client.emit('user_3d_throw_ball', { id: socket.id, position: payload.position, shootDirection: payload.shootDirection});
+        });
     });
 
     return client;

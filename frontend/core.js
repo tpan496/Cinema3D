@@ -136,7 +136,6 @@ function stopVideo() {
 
         // Listen for new user
         socket.on('new_user', function (payload) {
-            console.log(payload);
             if (payload.length) {
                 // Loop through messages
                 for (var x = 0; x < payload.length; x = x + 1) {
@@ -398,6 +397,13 @@ function stopVideo() {
         socket.on('user_3d_left', function(payload){
             if(payload.id != socket.id){
                 deletePlayer(payload.id);
+            }
+        });
+
+        // Throw ball
+        socket.on('user_3d_throw_ball', function(payload){
+            if(payload.id != socket.id){
+                throwBall(payload.position, payload.shootDirection);
             }
         });
     }

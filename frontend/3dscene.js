@@ -3,6 +3,7 @@ var container;
 var video;
 var screen, screenWidth = 16, screenHeight = 12;
 var playerEntity = {};
+var toBeRemovedBodies = [];
 
 var camera, scene, renderer;
 var cssRenderer, cssScene;
@@ -53,7 +54,7 @@ if (havePointerLock) {
         var keyCode = event.keyCode;
         sphereBody.wakeUp();
     };
-    
+
 
     instructions.addEventListener('click', function (event) {
         instructions.style.display = 'none';
@@ -147,9 +148,6 @@ function initCannon() {
     sphereBody.allowSleep = true;
     sphereBody.sleepSpeedLimit = 0.1;
     sphereBody.sleepTimeLimit = 0;
-    sphereBody.addEventListener('sleepy', function (e) {
-        console.log('sleepy', e);
-    });
     world.add(sphereBody);
 
     // Create a plane
@@ -294,7 +292,17 @@ function animate() {
     requestAnimationFrame(animate);
     if (controls.enabled) {
         world.step(dt);
-        if(socket !== undefined && sphereBody.sleepState == 0){
+        if (toBeRemovedBodies.length > 0) {
+            for (var i = 0; i < toBeRemovedBodies.length; i++) {
+                var e = toBeRemovedBodies[i];
+                ballMeshes.slice(ballMeshes.indexOf(e['mesh']));
+                balls.slice(balls.indexOf(e['body']));
+                world.remove(e['body']);
+                scene.remove(e['mesh']);
+            }
+            toBeRemovedBodies = [];
+        }
+        if (socket !== undefined && sphereBody.sleepState == 0) {
             propagatePositionData(sphereBody.position);
         }
 
@@ -358,12 +366,48 @@ window.addEventListener("click", function (e) {
         z += shootDirection.z * (sphereShape.radius * 1.02 + ballShape.radius);
         ballBody.position.set(x, y, z);
         ballMesh.position.set(x, y, z);
+
+        ballBody.addEventListener('collide', function (e) {
+            toBeRemovedBodies.push({ 'body': ballBody, 'mesh': ballMesh });
+        });
+        if(socket !== undefined){
+            socket.emit('user_3d_throw_ball', {id: socket.id, position: {x:x, y:y, z:z}, shootDirection: {x:shootDirection.x, y:shootDirection.y, z:shootDirection.z}});
+        }
     }
 });
 
+function throwBall(position, direction) {
+    var x = position.x;
+    var y = position.y;
+    var z = position.z;
+    var ballBody = new CANNON.Body({ mass: 1 });
+    ballBody.addShape(ballShape);
+    var ballMesh = new THREE.Mesh(ballGeometry, material);
+    world.add(ballBody);
+    scene.add(ballMesh);
+    ballMesh.castShadow = true;
+    ballMesh.receiveShadow = true;
+    balls.push(ballBody);
+    ballMeshes.push(ballMesh);
+    var targetVec = new THREE.Vector3(direction.x, direction.y, direction.z);
+    ballBody.velocity.set(targetVec.x * shootVelo,
+        targetVec.y * shootVelo,
+        targetVec.z * shootVelo);
+
+    // Move the ball outside the player sphere
+    x += direction.x * (sphereShape.radius * 1.02 + ballShape.radius);
+    y += direction.y * (sphereShape.radius * 1.02 + ballShape.radius);
+    z += direction.z * (sphereShape.radius * 1.02 + ballShape.radius);
+    ballBody.position.set(x, y, z);
+    ballMesh.position.set(x, y, z);
+
+    ballBody.addEventListener('collide', function (e) {
+        toBeRemovedBodies.push({ 'body': ballBody, 'mesh': ballMesh });
+    });
+}
 function spawnNewPlayer(id, x, y, z, c) {
     // Create a sphere
-    if(id in playerEntity){
+    if (id in playerEntity) {
         return;
     }
     var mass = 100, radius = 2;
@@ -378,18 +422,18 @@ function spawnNewPlayer(id, x, y, z, c) {
     ballMesh.position.set(x, y, z);
     world.add(sphereBody);
     scene.add(ballMesh);
-    playerEntity['id'] = {'body': sphereBody, 'mesh': ballMesh};
+    playerEntity['id'] = { 'body': sphereBody, 'mesh': ballMesh };
 }
 
-function movePlayer(id, x,y,z) {
+function movePlayer(id, x, y, z) {
     var p = playerEntity['id'];
     var b = p['body'];
     var m = p['mesh'];
-    b.position.set(x,y,z);
-    m.position.set(x,y,z);
+    b.position.set(x, y, z);
+    m.position.set(x, y, z);
 }
 
-function deletePlayer(id){
+function deletePlayer(id) {
     var p = playerEntity['id'];
     var b = p['body'];
     var m = p['mesh'];
