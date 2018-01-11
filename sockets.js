@@ -16,9 +16,9 @@ exports.listen = function(httpSever, db){
 		console.log('New client: ' + socket.id);
 
         // New user
-        client.emit('new_user', [{ id: socket.id }]);
+        server.clientIdList.push({id: socket.id, x:0, y:5, z:0});
+        client.emit('new_user', server.clientIdList);
         socket.emit('new_user', server.clientIdList);
-        server.clientIdList.push({id: socket.id});
 
         // Get chat history and video playlist from database
         var chatMessages = db.collection('chat_messages'),
@@ -75,6 +75,12 @@ exports.listen = function(httpSever, db){
             var index = server.clientIdList.indexOf({id: socket.id});
             server.clientIdList.splice(index, 1);
             client.emit('user_list_update', server.clientIdList);
+            client.emit('user_3d_left', {id: socket.id});
+        });
+
+        // Player move
+        socket.on('user_3d_position', function(payload){
+            client.emit('user_3d_moved', {id: socket.id, x: payload.x, y: payload.y, z:payload.z})
         });
 	});
 
