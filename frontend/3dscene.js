@@ -13,6 +13,8 @@ var controls, time = Date.now();
 var blocker = document.getElementById('blocker');
 var instructions = document.getElementById('instructions');
 
+
+// Check PLC
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
 if (havePointerLock) {
@@ -21,10 +23,8 @@ if (havePointerLock) {
 
     var pointerlockchange = function (event) {
         if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element) {
-
             controls.enabled = true;
             blocker.style.display = 'none';
-
         } else {
             controls.enabled = false;
 
@@ -49,6 +49,7 @@ if (havePointerLock) {
     document.addEventListener('mozpointerlockerror', pointerlockerror, false);
     document.addEventListener('webkitpointerlockerror', pointerlockerror, false);
 
+    // Wake up 
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {
         var keyCode = event.keyCode;
