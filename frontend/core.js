@@ -146,6 +146,7 @@ function stopVideo() {
                     if (payload[x].id != socket.id) {
                         spawnNewPlayer(payload[x].id, payload[x].x, payload[x].y, payload[x].z, payload[x].color)
                     }
+                    user.style.background = payload[x].color;
 
                     // Append
                     userlist.appendChild(user);
