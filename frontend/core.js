@@ -144,7 +144,7 @@ function stopVideo() {
                     user.setAttribute('class', 'user');
                     user.textContent = payload[x].id;
                     if (payload[x].id != socket.id) {
-                        spawnNewPlayer(payload[x].id, payload[x].x, payload[x].y, payload[x].z)
+                        spawnNewPlayer(payload[x].id, payload[x].x, payload[x].y, payload[x].z, payload[x].color)
                     }
 
                     // Append

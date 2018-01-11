@@ -361,7 +361,7 @@ window.addEventListener("click", function (e) {
     }
 });
 
-function spawnNewPlayer(id, x, y, z) {
+function spawnNewPlayer(id, x, y, z, c) {
     // Create a sphere
     if(id in playerEntity){
         return;
@@ -373,6 +373,7 @@ function spawnNewPlayer(id, x, y, z) {
     sphereBody.position.set(x, y, z);
     var ballShape = new CANNON.Sphere(2);
     var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
+    var material = new THREE.MeshLambertMaterial({ color: c });
     var ballMesh = new THREE.Mesh(ballGeometry, material);
     ballMesh.position.set(x, y, z);
     world.add(sphereBody);
