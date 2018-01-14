@@ -269,7 +269,7 @@ function stopVideo() {
         // Listen for force sync
         socket.on('host_youtube_video_progress', function (payload) {
             console.log('Force sync recieved at ' + payload.time + ' status: ' + payload.status);
-            hostId.textContent = payload.hostId;
+            hostId.textContent = 'current host: '+ payload.hostId;
             if (!YTPlayerIsReady) {
                 return;
             }
