@@ -268,7 +268,7 @@ function init() {
     };
     createWall(0, 20, 20, 40, 40, 2, material);
     createWall(0, 20, -20, 40, 40, 2, material);
-    var w3 = createWall(20, 20, 0, 40, 40, 2);
+    var w3 = createWall(20, 20, 0, 40, 40, 2, sideMaterial);
     w3['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
     w3['mesh'].position.copy(w3['body'].position);
     w3['mesh'].quaternion.copy(w3['body'].quaternion);
@@ -276,7 +276,7 @@ function init() {
     w4['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
     w4['mesh'].position.copy(w4['body'].position);
     w4['mesh'].quaternion.copy(w4['body'].quaternion);
-    var ceiling = createWall(0, 40, 0, 40, 40, 2, sideMaterial);
+    var ceiling = createWall(0, 40, 0, 40, 40, 2, material);
     ceiling['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     ceiling['mesh'].position.copy(ceiling['body'].position);
     ceiling['mesh'].quaternion.copy(ceiling['body'].quaternion);
