@@ -2,7 +2,7 @@ var server = require('../server.js');
 
 function listenHostRequest(client, socket, payload) {
     server.videoHostId = socket.id;
-    client.emit("host_video_progress", { time: payload.time, status: payload.status, hostId: server.videoHostId });
+    client.emit("host_youtube_video_progress", { time: payload.time, status: payload.status, hostId: server.videoHostId });
 }
 
 function listenSkipRequest(client, socket, payload) {
