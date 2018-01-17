@@ -249,12 +249,13 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
     // walls
-    var createWall = function (x, y, z, w, h, l) {
+    var sideMaterial = new THREE.MeshLambertMaterial({ color: 0xeeeeee });
+    var createWall = function (x, y, z, w, h, l, m) {
         var wallShape = new CANNON.Box(new CANNON.Vec3(w / 2, h / 2, l / 2));
         var wallBody = new CANNON.Body({ mass: 0 });
         wallBody.addShape(wallShape);
         var wallGeometry = new THREE.BoxGeometry(w, h, l);
-        var wallMesh = new THREE.Mesh(wallGeometry, material);
+        var wallMesh = new THREE.Mesh(wallGeometry, m);
         world.add(wallBody);
         scene.add(wallMesh);
         wallBody.position.set(x, y, z);
@@ -265,17 +266,17 @@ function init() {
         //boxMeshes.push(wallMesh);
         return { 'mesh': wallMesh, 'body': wallBody };
     };
-    createWall(0, 20, 20, 40, 40, 2);
-    createWall(0, 20, -20, 40, 40, 2);
+    createWall(0, 20, 20, 40, 40, 2, material);
+    createWall(0, 20, -20, 40, 40, 2, material);
     var w3 = createWall(20, 20, 0, 40, 40, 2);
     w3['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
     w3['mesh'].position.copy(w3['body'].position);
     w3['mesh'].quaternion.copy(w3['body'].quaternion);
-    var w4 = createWall(-20, 20, 0, 40, 40, 2);
+    var w4 = createWall(-20, 20, 0, 40, 40, 2, sideMaterial);
     w4['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
     w4['mesh'].position.copy(w4['body'].position);
     w4['mesh'].quaternion.copy(w4['body'].quaternion);
-    var ceiling = createWall(0, 40, 0, 40, 40, 2);
+    var ceiling = createWall(0, 40, 0, 40, 40, 2, sideMaterial);
     ceiling['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
     ceiling['mesh'].position.copy(ceiling['body'].position);
     ceiling['mesh'].quaternion.copy(ceiling['body'].quaternion);
