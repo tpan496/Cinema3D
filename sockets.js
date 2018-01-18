@@ -27,6 +27,7 @@ exports.listen = function (httpSever, db) {
         // New user
         server.clientIdList.push({ id: socket.id, x: 0, y: 5, z: 0, color: getRandomColor() });
         client.emit('new_user', server.clientIdList);
+        console.log(server.clientIdList);
         //socket.emit('new_user', server.clientIdList);
 
         // Get chat history and video playlist from database

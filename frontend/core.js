@@ -33,12 +33,6 @@ try {
     throw e;
 }
 
-function propagatePositionData(p) {
-    if (socket !== undefined) {
-        socket.emit('user_3d_position', { x: p.x, y: p.y, z: p.z });
-    }
-}
-
 // Status for texting/video
 var setStatus = function (s) {
     status.textContent = s;

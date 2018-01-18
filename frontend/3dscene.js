@@ -305,7 +305,8 @@ function animate() {
             toBeRemovedBodies = [];
         }
         if (socket !== undefined && sphereBody.sleepState == 0) {
-            propagatePositionData(sphereBody.position);
+            var p = sphereBody.position;
+            socket.emit('user_3d_position', { x: p.x, y: p.y, z: p.z });
         }
 
         // Update ball positions
@@ -424,11 +425,11 @@ function spawnNewPlayer(id, x, y, z, c) {
     ballMesh.position.set(x, y, z);
     world.add(sphereBody);
     scene.add(ballMesh);
-    playerEntity['id'] = { 'body': sphereBody, 'mesh': ballMesh };
+    playerEntity[id] = { 'body': sphereBody, 'mesh': ballMesh };
 }
 
 function movePlayer(id, x, y, z) {
-    var p = playerEntity['id'];
+    var p = playerEntity[id];
     var b = p['body'];
     var m = p['mesh'];
     b.position.set(x, y, z);
@@ -436,7 +437,7 @@ function movePlayer(id, x, y, z) {
 }
 
 function deletePlayer(id) {
-    var p = playerEntity['id'];
+    var p = playerEntity[id];
     var b = p['body'];
     var m = p['mesh'];
     world.remove(b);
