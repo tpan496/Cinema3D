@@ -139,7 +139,7 @@ function initCannon() {
 
     world.allowSleep = true;
 
-    // Create a sphere
+    // Create a sphere (player)
     var mass = 100, radius = 2;
     sphereShape = new CANNON.Sphere(radius);
     sphereBody = new CANNON.Body({ mass: mass, material: physicsMaterial });
@@ -159,6 +159,7 @@ function initCannon() {
     world.add(groundBody);
 }
 
+// Scene render initialization
 function init() {
 
     var onKeyDown = function (event) {
@@ -212,10 +213,9 @@ function init() {
     mesh.receiveShadow = true;
     scene.add(mesh);
 
-    //renderer = new THREE.WebGLRenderer({ alpha: true });
+    // renderer
     renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    //renderer.setClearColor( scene.fog.color, 1 );
     renderer.setClearColor(0x000000, 0);
     renderer.domElement.style.position = 'absolute';
     renderer.domElement.style.top = 0;
@@ -231,6 +231,7 @@ function init() {
     container.appendChild(cssRenderer.domElement);
     cssRenderer.domElement.appendChild(renderer.domElement);
 
+    // plane behind video
     var planeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.1 });
     var planeGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
     screen = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -239,6 +240,7 @@ function init() {
     // add it to the standard (WebGL) scene
     scene.add(screen);
 
+    // css iframe video
     var percentBorder = 0.05;
     video = new Element('opDlMeqRACI', 0, 0, -18.5, 0);
     video.scale.x /= (1 + percentBorder) * (480 / screenWidth);
@@ -290,10 +292,14 @@ function onWindowResize() {
 }
 
 var dt = 1 / 60;
+
+// Called every frame
 function animate() {
     requestAnimationFrame(animate);
     if (controls.enabled) {
         world.step(dt);
+
+        // Check if there are things that need removed
         if (toBeRemovedBodies.length > 0) {
             for (var i = 0; i < toBeRemovedBodies.length; i++) {
                 var e = toBeRemovedBodies[i];
@@ -304,6 +310,8 @@ function animate() {
             }
             toBeRemovedBodies = [];
         }
+
+        // If player moved, notify other players
         if (socket !== undefined && sphereBody.sleepState == 0) {
             var p = sphereBody.position;
             socket.emit('user_3d_position', { x: p.x, y: p.y, z: p.z });
@@ -331,6 +339,7 @@ function animate() {
     time = Date.now();
 }
 
+// Shooting balls (or perhaps other things)!
 var ballShape = new CANNON.Sphere(0.2);
 var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 var shootDirection = new THREE.Vector3();
@@ -344,6 +353,7 @@ function getShootDir(targetVec) {
     targetVec.copy(ray.direction);
 }
 
+// Click to trigger shoot ball event
 window.addEventListener("click", function (e) {
     if (controls.enabled == true) {
         var x = sphereBody.position.x;
@@ -373,12 +383,15 @@ window.addEventListener("click", function (e) {
         ballBody.addEventListener('collide', function (e) {
             toBeRemovedBodies.push({ 'body': ballBody, 'mesh': ballMesh });
         });
+
+        // Notify other players that ball is out
         if(socket !== undefined){
             socket.emit('user_3d_throw_ball', {id: socket.id, position: {x:x, y:y, z:z}, shootDirection: {x:shootDirection.x, y:shootDirection.y, z:shootDirection.z}});
         }
     }
 });
 
+// Throws ball
 function throwBall(position, direction) {
     var x = position.x;
     var y = position.y;
@@ -408,6 +421,8 @@ function throwBall(position, direction) {
         toBeRemovedBodies.push({ 'body': ballBody, 'mesh': ballMesh });
     });
 }
+
+// Creates a new player that has just entered
 function spawnNewPlayer(id, x, y, z, c) {
     // Create a sphere
     if (id in playerEntity) {
@@ -428,6 +443,7 @@ function spawnNewPlayer(id, x, y, z, c) {
     playerEntity[id] = { 'body': sphereBody, 'mesh': ballMesh };
 }
 
+// Moves a certain player
 function movePlayer(id, x, y, z) {
     var p = playerEntity[id];
     var b = p['body'];
@@ -436,6 +452,7 @@ function movePlayer(id, x, y, z) {
     m.position.set(x, y, z);
 }
 
+// Deletes a certain player
 function deletePlayer(id) {
     var p = playerEntity[id];
     var b = p['body'];
