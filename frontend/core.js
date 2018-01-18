@@ -136,6 +136,9 @@ function stopVideo() {
 
         // Listen for new user
         socket.on('new_user', function (payload) {
+            while (userlist.firstChild) {
+                userlist.removeChild(userlist.firstChild);
+            }
             if (payload.length) {
                 // Loop through messages
                 for (var x = 0; x < payload.length; x = x + 1) {
