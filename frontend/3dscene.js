@@ -1,4 +1,4 @@
-var sphereShape, sphereBody, world, physicsMaterial, walls = [], balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
+var playerShape, playerBody, world, physicsMaterial, balls = [], ballMeshes = [], boxes = [], boxMeshes = [];
 var container;
 var video;
 var screen, screenWidth = 16, screenHeight = 12;
@@ -53,7 +53,7 @@ if (havePointerLock) {
     document.addEventListener("keydown", onDocumentKeyDown, false);
     function onDocumentKeyDown(event) {
         var keyCode = event.keyCode;
-        sphereBody.wakeUp();
+        playerBody.wakeUp();
     };
 
 
@@ -101,6 +101,7 @@ initCannon();
 init();
 animate();
 
+// Physics controller initialization
 function initCannon() {
     // Setup our world
     world = new CANNON.World();
@@ -129,8 +130,8 @@ function initCannon() {
     var physicsContactMaterial = new CANNON.ContactMaterial(groundMaterial,
         physicsMaterial,
         {
-            friction: 0.3, // friction coefficient
-            restitution: 0.3
+            friction: 0.999, // friction coefficient
+            restitution: 0.0
         }  // restitution
     );
 
@@ -140,16 +141,17 @@ function initCannon() {
     world.allowSleep = true;
 
     // Create a sphere (player)
-    var mass = 100, radius = 2;
-    sphereShape = new CANNON.Sphere(radius);
-    sphereBody = new CANNON.Body({ mass: mass, material: physicsMaterial });
-    sphereBody.addShape(sphereShape);
-    sphereBody.position.set(0, 5, 0);
-    sphereBody.linearDamping = 0.9;
-    sphereBody.allowSleep = true;
-    sphereBody.sleepSpeedLimit = 0.1;
-    sphereBody.sleepTimeLimit = 0;
-    world.add(sphereBody);
+    var mass = 5, radius = 1;
+    playerShape = new CANNON.Sphere(radius);
+    playerBody = new CANNON.Body({ mass: mass, material: physicsMaterial });
+    playerBody.addShape(playerShape);
+    playerBody.position.set(0, 5, 0);
+    playerBody.linearDamping = 0.9;
+    playerBody.allowSleep = true;
+    playerBody.sleepSpeedLimit = 0.1;
+    playerBody.sleepTimeLimit = 0;
+    playerBody.linearFactor = new CANNON.Vec3(1,1,1);
+    world.add(playerBody);
 
     // Create a plane
     var groundShape = new CANNON.Plane();
@@ -177,12 +179,12 @@ function init() {
 
     scene = new THREE.Scene();
 
-    var ambient = new THREE.AmbientLight(0x111111);
+    var ambient = new THREE.AmbientLight(0x222222);
     scene.add(ambient);
 
-    light = new THREE.SpotLight(0xffffff);
-    light.position.set(0, 50, 0);
-    light.target.position.set(0, 0, 0);
+    light = new THREE.PointLight(0xffffff, 1, 100, 2);
+    light.position.set(0, 10, 0);
+    //light.target.position.set(0, 0, 0);
     if (true) {
         light.castShadow = true;
 
@@ -199,14 +201,18 @@ function init() {
     }
     scene.add(light);
 
-    controls = new PointerLockControls(camera, sphereBody);
+    controls = new PointerLockControls(camera, playerBody);
     scene.add(controls.getObject());
 
     // floor
-    geometry = new THREE.PlaneGeometry(300, 300, 50, 50);
+    geometry = new THREE.PlaneGeometry(40, 40, 50, 50);
     geometry.applyMatrix(new THREE.Matrix4().makeRotationX(- Math.PI / 2));
 
-    material = new THREE.MeshLambertMaterial({ color: 0xdddddd });
+    var texture = new THREE.TextureLoader().load("textures/grey_128.jpg");
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(32, 32);
+    material = new THREE.MeshPhongMaterial({ map: texture });
 
     mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = true;
@@ -232,7 +238,7 @@ function init() {
     cssRenderer.domElement.appendChild(renderer.domElement);
 
     // plane behind video
-    var planeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.1 });
+    var planeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.1});
     var planeGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
     screen = new THREE.Mesh(planeGeometry, planeMaterial);
     screen.position.y += screenHeight / 2;
@@ -250,38 +256,9 @@ function init() {
 
     window.addEventListener('resize', onWindowResize, false);
 
-    // walls
-    var sideMaterial = new THREE.MeshLambertMaterial({ color: 0xeeeeee });
-    var createWall = function (x, y, z, w, h, l, m) {
-        var wallShape = new CANNON.Box(new CANNON.Vec3(w / 2, h / 2, l / 2));
-        var wallBody = new CANNON.Body({ mass: 0 });
-        wallBody.addShape(wallShape);
-        var wallGeometry = new THREE.BoxGeometry(w, h, l);
-        var wallMesh = new THREE.Mesh(wallGeometry, m);
-        world.add(wallBody);
-        scene.add(wallMesh);
-        wallBody.position.set(x, y, z);
-        wallMesh.position.set(x, y, z);
-        wallMesh.castShadow = true;
-        wallMesh.receiveShadow = true;
-        //boxes.push(wallBody);
-        //boxMeshes.push(wallMesh);
-        return { 'mesh': wallMesh, 'body': wallBody };
-    };
-    createWall(0, 20, 20, 40, 40, 2, material);
-    createWall(0, 20, -20, 40, 40, 2, material);
-    var w3 = createWall(20, 20, 0, 40, 40, 2, sideMaterial);
-    w3['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    w3['mesh'].position.copy(w3['body'].position);
-    w3['mesh'].quaternion.copy(w3['body'].quaternion);
-    var w4 = createWall(-20, 20, 0, 40, 40, 2, sideMaterial);
-    w4['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    w4['mesh'].position.copy(w4['body'].position);
-    w4['mesh'].quaternion.copy(w4['body'].quaternion);
-    var ceiling = createWall(0, 40, 0, 40, 40, 2, material);
-    ceiling['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-    ceiling['mesh'].position.copy(ceiling['body'].position);
-    ceiling['mesh'].quaternion.copy(ceiling['body'].quaternion);
+    // Creates cinema map
+    createMap();
+    setEnvironment();
 }
 
 function onWindowResize() {
@@ -312,8 +289,8 @@ function animate() {
         }
 
         // If player moved, notify other players
-        if (socket !== undefined && sphereBody.sleepState == 0) {
-            var p = sphereBody.position;
+        if (socket !== undefined && playerBody.sleepState == 0) {
+            var p = playerBody.position;
             socket.emit('user_3d_position', { x: p.x, y: p.y, z: p.z });
         }
 
@@ -343,25 +320,26 @@ function animate() {
 var ballShape = new CANNON.Sphere(0.2);
 var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 var shootDirection = new THREE.Vector3();
-var shootVelo = 15;
+var shootVelo = 50;
 var projector = new THREE.Projector();
+var ballMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
 function getShootDir(targetVec) {
     var vector = targetVec;
     targetVec.set(0, 0, 1);
     projector.unprojectVector(vector, camera);
-    var ray = new THREE.Ray(sphereBody.position, vector.sub(sphereBody.position).normalize());
+    var ray = new THREE.Ray(playerBody.position, vector.sub(playerBody.position).normalize());
     targetVec.copy(ray.direction);
 }
 
 // Click to trigger shoot ball event
 window.addEventListener("click", function (e) {
     if (controls.enabled == true) {
-        var x = sphereBody.position.x;
-        var y = sphereBody.position.y;
-        var z = sphereBody.position.z;
+        var x = playerBody.position.x;
+        var y = playerBody.position.y;
+        var z = playerBody.position.z;
         var ballBody = new CANNON.Body({ mass: 1 });
         ballBody.addShape(ballShape);
-        var ballMesh = new THREE.Mesh(ballGeometry, material);
+        var ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
         world.add(ballBody);
         scene.add(ballMesh);
         ballMesh.castShadow = true;
@@ -374,9 +352,9 @@ window.addEventListener("click", function (e) {
             shootDirection.z * shootVelo);
 
         // Move the ball outside the player sphere
-        x += shootDirection.x * (sphereShape.radius * 1.02 + ballShape.radius);
-        y += shootDirection.y * (sphereShape.radius * 1.02 + ballShape.radius);
-        z += shootDirection.z * (sphereShape.radius * 1.02 + ballShape.radius);
+        x += shootDirection.x * (playerShape.radius * 1.02 + ballShape.radius);
+        y += shootDirection.y * (playerShape.radius * 1.02 + ballShape.radius);
+        z += shootDirection.z * (playerShape.radius * 1.02 + ballShape.radius);
         ballBody.position.set(x, y, z);
         ballMesh.position.set(x, y, z);
 
@@ -411,9 +389,9 @@ function throwBall(position, direction) {
         targetVec.z * shootVelo);
 
     // Move the ball outside the player sphere
-    x += direction.x * (sphereShape.radius * 1.02 + ballShape.radius);
-    y += direction.y * (sphereShape.radius * 1.02 + ballShape.radius);
-    z += direction.z * (sphereShape.radius * 1.02 + ballShape.radius);
+    x += direction.x * (playerShape.radius * 1.02 + ballShape.radius);
+    y += direction.y * (playerShape.radius * 1.02 + ballShape.radius);
+    z += direction.z * (playerShape.radius * 1.02 + ballShape.radius);
     ballBody.position.set(x, y, z);
     ballMesh.position.set(x, y, z);
 
@@ -428,7 +406,7 @@ function spawnNewPlayer(id, x, y, z, c) {
     if (id in playerEntity) {
         return;
     }
-    var mass = 100, radius = 2;
+    var mass = 100, radius = 1;
     var sphereShape = new CANNON.Sphere(radius);
     var sphereBody = new CANNON.Body({ mass: mass, material: physicsMaterial });
     sphereBody.addShape(sphereShape);
