@@ -1,9 +1,16 @@
 /**
- * world: game world
+ * Use methods from physicalEntity.js and pointEntity.js
+ * (designed in respect of valve hammer editor)
+ * world: the physical game world
+ * scene: the renderer game world
  * playerBody: player physical body
  * controls: player FPS control
- * createRigidBox(x,y,z, width, height, length, material): creates a static box
+ * 
+ * Sample methods:
+ * createRigidBox(x,y,z, width, height, length, material): creates a static box (zero mass)
+ * at position (x,y,z) with size(width, height, length) and material
  * createBox(same as above): creates a moveable box
+ * view others in physicalEntity.js and pointEntity.js
  */
 
 function setEnvironment(){
@@ -13,6 +20,9 @@ function setEnvironment(){
     playerBody.mass = 5;
     controls.setMaxVelocity(6);
     controls.setJumpVelocity(15);
+    // light
+    var ambient = createAmbientLight(0x222222);
+    var point = createPointLight(0,10,0,0xffffff,1,100,2);
 }
 
 function createMap() {
@@ -22,21 +32,19 @@ function createMap() {
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(32, 32);
     var sideMaterial = new THREE.MeshPhongMaterial({map: texture});
-    var groundMaterial = new THREE.MeshPhongMaterial({map: texture});
+    var groundMaterial = new THREE.MeshPhongMaterial({map: texture, color: 0xbbbbbb});
     createRigidBox(0, 20, 20, 40, 40, 2, sideMaterial);
     createRigidBox(0, 20, -20, 40, 40, 2, sideMaterial);
     var w3 = createRigidBox(20, 20, 0, 40, 40, 2, sideMaterial);
-    w3['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    w3['mesh'].position.copy(w3['body'].position);
-    w3['mesh'].quaternion.copy(w3['body'].quaternion);
+    // rotations
+    w3.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
+    w3.mesh.quaternion.copy(w3['body'].quaternion);
     var w4 = createRigidBox(-20, 20, 0, 40, 40, 2, sideMaterial);
-    w4['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
-    w4['mesh'].position.copy(w4['body'].position);
-    w4['mesh'].quaternion.copy(w4['body'].quaternion);
-    var ceiling = createRigidBox(0, 40, 0, 40, 40, 2, material);
-    ceiling['body'].quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-    ceiling['mesh'].position.copy(ceiling['body'].position);
-    ceiling['mesh'].quaternion.copy(ceiling['body'].quaternion);
+    w4.body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), -Math.PI / 2);
+    w4.mesh.quaternion.copy(w4['body'].quaternion);
+    var ceiling = createRigidBox(0, 40, 0, 40, 40, 2, groundMaterial);
+    ceiling.body.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+    ceiling.mesh.quaternion.copy(ceiling['body'].quaternion);
 
     // some things to jump around
     var boxMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000});
@@ -63,5 +71,5 @@ function createMap() {
 
     /*var texture = new THREE.TextureLoader().load("textures/wood.jpg");
     var boxMaterial4 = new THREE.MeshPhongMaterial({ map: texture});
-    createBox(5, 14, 5, 1, 1, 1, boxMaterial3);*/
+    createBox(5, 14, 5, 1, 1, 1, boxMaterial3, 1);*/
 }

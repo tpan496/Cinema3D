@@ -152,28 +152,6 @@ function init() {
 
     scene = new THREE.Scene();
 
-    var ambient = new THREE.AmbientLight(0x222222);
-    scene.add(ambient);
-
-    light = new THREE.PointLight(0xffffff, 1, 100, 2);
-    light.position.set(0, 10, 0);
-    //light.target.position.set(0, 0, 0);
-    if (true) {
-        light.castShadow = true;
-
-        light.shadowCameraNear = 20;
-        light.shadowCameraFar = 50;//camera.far;
-        light.shadowCameraFov = 40;
-
-        light.shadowMapBias = 0.1;
-        light.shadowMapDarkness = 0.7;
-        light.shadowMapWidth = 2 * 512;
-        light.shadowMapHeight = 2 * 512;
-
-        //light.shadowCameraVisible = true;
-    }
-    scene.add(light);
-
     controls = new PointerLockControls(camera, playerBody);
     scene.add(controls.getObject());
 
@@ -291,12 +269,12 @@ function animate() {
 
 // Shooting balls (or perhaps other things)!
 var points = [];
-for ( var deg = 0; deg <= 180; deg += 6 ) {
+for (var deg = 0; deg <= 180; deg += 6) {
 
     var rad = Math.PI * deg / 180;
-    var point = new THREE.Vector2( ( 0.72 + .08 * Math.cos( rad ) ) * Math.sin( rad ), - Math.cos( rad ) ); // the "egg equation"
+    var point = new THREE.Vector2((0.72 + .08 * Math.cos(rad)) * Math.sin(rad), - Math.cos(rad)); // the "egg equation"
     //console.log( point ); // x-coord should be greater than zero to avoid degenerate triangles; it is not in this formula.
-    points.push( point );
+    points.push(point);
 
 }
 
@@ -322,7 +300,7 @@ window.addEventListener("click", function (e) {
         var ballBody = new CANNON.Body({ mass: 1 });
         ballBody.addShape(ballShape);
         var ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
-        ballMesh.scale.set(0.25,0.25,0.25);
+        ballMesh.scale.set(0.25, 0.25, 0.25);
         world.add(ballBody);
         scene.add(ballMesh);
         ballMesh.castShadow = true;
@@ -360,7 +338,7 @@ function throwBall(position, direction) {
     var ballBody = new CANNON.Body({ mass: 1 });
     ballBody.addShape(ballShape);
     var ballMesh = new THREE.Mesh(ballGeometry, material);
-    ballMesh.scale.set(0.25,0.25,0.25);
+    ballMesh.scale.set(0.25, 0.25, 0.25);
     world.add(ballBody);
     scene.add(ballMesh);
     ballMesh.castShadow = true;
@@ -398,18 +376,45 @@ function spawnNewPlayer(id, x, y, z, c) {
     var ballShape = new CANNON.Sphere(radius);
     var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
     var material = new THREE.MeshLambertMaterial({ color: c });
+    /*
+    var loader = new THREE.ObjectLoader();
+
+    loader.load(
+        // resource URL
+        "models/mario-sculpture.json",
+
+        // onLoad callback
+        // Here the loaded data is assumed to be an object
+        function (obj) {
+            // Add the loaded object to the scene
+            obj.position.set(x, y, z);
+            obj.scale.set(0.01,0.01,0.01);
+            scene.add(obj);
+            playerEntity[id] = { 'body': sphereBody, 'mesh': obj };
+        },
+
+        // onProgress callback
+        function (err) {
+            //console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+
+        // onError callback
+        function (xhr) {
+            //console.error('An error happened');
+        }
+    );*/
     var ballMesh = new THREE.Mesh(ballGeometry, material);
     ballMesh.position.set(x, y, z);
     world.add(sphereBody);
     scene.add(ballMesh);
-    playerEntity[id] = { 'body': sphereBody, 'mesh': ballMesh };
+    playerEntity[id] = { body: sphereBody, mesh: ballMesh };
 }
 
 // Moves a certain player
 function movePlayer(id, x, y, z) {
     var p = playerEntity[id];
-    var b = p['body'];
-    var m = p['mesh'];
+    var b = p.body;
+    var m = p.mesh;
     b.position.set(x, y, z);
     m.position.set(x, y, z);
 }
@@ -417,8 +422,8 @@ function movePlayer(id, x, y, z) {
 // Deletes a certain player
 function deletePlayer(id) {
     var p = playerEntity[id];
-    var b = p['body'];
-    var m = p['mesh'];
+    var b = p.body;
+    var m = p.mesh;
     world.remove(b);
     scene.remove(m);
 }
