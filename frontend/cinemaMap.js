@@ -10,7 +10,7 @@ function setEnvironment(){
     // gravity
     world.gravity.set(0, -20, 0);
     // player
-    playerBody.mass = 10;
+    playerBody.mass = 5;
     controls.setMaxVelocity(6);
     controls.setJumpVelocity(15);
 }
