@@ -10,10 +10,6 @@ var cssRenderer, cssScene;
 var geometry, material, mesh;
 var controls, time = Date.now();
 
-var blocker = document.getElementById('blocker');
-var instructions = document.getElementById('instructions');
-
-
 // Check PLC
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
@@ -24,20 +20,28 @@ if (havePointerLock) {
     var pointerlockchange = function (event) {
         if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element) {
             controls.enabled = true;
-            blocker.style.display = 'none';
+            document.getElementById('chat-textarea').style.visibility = 'hidden';
+            document.getElementById('chat-name').style.visibility = 'hidden';
+            document.getElementById('chat-button-use-chat').style.visibility = 'hidden';
+            document.getElementById('chat-button-use-console').style.visibility = 'hidden';
+            document.getElementById('chat-status').style.visibility = 'hidden';
+            document.getElementById('chat-messages').style.background = 'transparent';
+            document.getElementById('chat-messages').style.border = 'none';
+            document.getElementById('chat-messages').style.overflowY = 'hidden';
         } else {
             controls.enabled = false;
-
-            blocker.style.display = '-webkit-box';
-            blocker.style.display = '-moz-box';
-            blocker.style.display = 'box';
-
-            instructions.style.display = '';
+            document.getElementById('chat-textarea').style.visibility = 'visible';
+            document.getElementById('chat-name').style.visibility = 'visible';
+            document.getElementById('chat-button-use-chat').style.visibility = 'visible';
+            document.getElementById('chat-button-use-console').style.visibility = 'visible';
+            document.getElementById('chat-status').style.visibility = 'visible';
+            document.getElementById('chat-messages').style.background = 'rgba(110, 110, 110, 0.479)';
+            document.getElementById('chat-messages').style.border = '1px solid rgb(161, 161, 161)';
+            document.getElementById('chat-messages').style.overflowY = 'visible';
         }
     }
 
     var pointerlockerror = function (event) {
-        instructions.style.display = '';
     }
 
     // Hook pointer lock state change events
@@ -55,35 +59,6 @@ if (havePointerLock) {
         var keyCode = event.keyCode;
         playerBody.wakeUp();
     };
-
-
-    instructions.addEventListener('click', function (event) {
-        instructions.style.display = 'none';
-
-        // Ask the browser to lock the pointer
-        element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
-
-        if (/Firefox/i.test(navigator.userAgent)) {
-            var fullscreenchange = function (event) {
-                if (document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element) {
-                    document.removeEventListener('fullscreenchange', fullscreenchange);
-                    document.removeEventListener('mozfullscreenchange', fullscreenchange);
-
-                    element.requestPointerLock();
-                }
-            }
-
-            document.addEventListener('fullscreenchange', fullscreenchange, false);
-            document.addEventListener('mozfullscreenchange', fullscreenchange, false);
-
-            element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
-            element.requestFullscreen();
-        } else {
-            element.requestPointerLock();
-        }
-    }, false);
-} else {
-    instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
 }
 
 var Element = function (id, x, y, z, ry) {
@@ -150,7 +125,7 @@ function initCannon() {
     playerBody.allowSleep = true;
     playerBody.sleepSpeedLimit = 0.1;
     playerBody.sleepTimeLimit = 0;
-    playerBody.linearFactor = new CANNON.Vec3(1,1,1);
+    playerBody.linearFactor = new CANNON.Vec3(1, 1, 1);
     world.add(playerBody);
 
     // Create a plane
@@ -165,9 +140,8 @@ function initCannon() {
 function init() {
 
     var onKeyDown = function (event) {
-        if (instructions.style.display != 'none') {
-            instructions.style.display = 'none';
-
+        console.log(document.activeElement);
+        if (document.activeElement.className == 'main') {
             // Ask the browser to lock the pointer
             element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
             element.requestPointerLock();
@@ -238,7 +212,7 @@ function init() {
     cssRenderer.domElement.appendChild(renderer.domElement);
 
     // plane behind video
-    var planeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.1});
+    var planeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.1 });
     var planeGeometry = new THREE.PlaneGeometry(screenWidth, screenHeight);
     screen = new THREE.Mesh(planeGeometry, planeMaterial);
     screen.position.y += screenHeight / 2;
@@ -322,7 +296,7 @@ var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 var shootDirection = new THREE.Vector3();
 var shootVelo = 50;
 var projector = new THREE.Projector();
-var ballMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+var ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 function getShootDir(targetVec) {
     var vector = targetVec;
     targetVec.set(0, 0, 1);
@@ -363,8 +337,8 @@ window.addEventListener("click", function (e) {
         });
 
         // Notify other players that ball is out
-        if(socket !== undefined){
-            socket.emit('user_3d_throw_ball', {id: socket.id, position: {x:x, y:y, z:z}, shootDirection: {x:shootDirection.x, y:shootDirection.y, z:shootDirection.z}});
+        if (socket !== undefined) {
+            socket.emit('user_3d_throw_ball', { id: socket.id, position: { x: x, y: y, z: z }, shootDirection: { x: shootDirection.x, y: shootDirection.y, z: shootDirection.z } });
         }
     }
 });

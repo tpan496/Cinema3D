@@ -6,41 +6,31 @@
     <link rel="shortcut icon" type="image/x-icon" href="resources/favicon.ico" />
 </head>
 <body class="main">
-    <div class="threed">
-        <div id="blocker" style="display: block;">
-            <div id="instructions" style="">
-                <span style="font-size:40px">Space to unlock</span>
-                <br> (You are in mouse mode)
-            </div>
-        </div>
-        <div id="container"></div>
-    </div>
+    <div id="container"></div>
     <div class="content">
         <div class="client">
-            <button id="host-button" type="button" class="btn btn-primary">Become host</button>
+            <button id="host-button" type="button" class="button">Be host</button>
             <div class="host-id"></div>
         </div>
         <div class="video">
-            <div class="video-info">
-                <div class="video-users"></div>
-                <div class="video-playlist"></div>
-            </div>
-            <div class="video-manipulation">
-                <div class="video-banner">Now Playing:</div>
-                <button id="video-button-skip" type="button" class="btn btn-primary">Skip</button>
-                <button id="video-button-video-status" class="btn btn-success">Playing</button>
+
+            <div class="video-users"></div>
+            <div class="video-playlist"></div>
+            <div class="video-banner">Now Playing:</div>
+            <button id="video-button-skip" type="button" class="button">Skip</button>
+            <button id="video-button-video-status" class="button">Playing</button>
             </div>
         </div>
         <div class="chat">
             <input type="text" id="chat-name" class="form-control" placeholder="Enter your name" value="">
-            <div class="chat-messages"></div>
-            <textarea class="form-control" id="chat-textarea" rows="10" placeholder="Enter here"></textarea>
+            <div class="chat-messages" id="chat-messages"></div>
+            <textarea class="form-control" id="chat-textarea" rows="1" placeholder="Enter here"></textarea>
             <div class="chat-switch-buttons">
-                <button id="chat-button-use-chat" type="button" class="btn btn-default">Chat</button>
-                <button id="chat-button-use-console" type="button" class="btn btn-default">Console</button>
+                <button id="chat-button-use-chat" type="button" class="button">Chat</button>
+                <button id="chat-button-use-console" type="button" class="button">Console</button>
             </div>
 
-            <div class="chat-status">
+            <div class="chat-status" id="chat-status">
                 Status:
                 <span>Idle</span>
             </div>

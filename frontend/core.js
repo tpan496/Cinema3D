@@ -5,6 +5,7 @@ var YTPlayerStatus;
 var localPlayerStatus;
 var prevCommand;
 var curCommand;
+var editing;
 
 var tag = document.createElement('script');
 
@@ -16,7 +17,7 @@ var getNode = function (s) {
     return document.querySelector(s);
 },
     body = getNode('.main');
-status = getNode('.chat-status span'),
+    status = getNode('.chat-status span'),
     messages = getNode('.chat-messages'),
     textarea = getNode('#chat-textarea'),
     chatName = getNode('#chat-name'),
@@ -105,7 +106,7 @@ function onPlayerReady(event) {
     event.target.playVideo();
     YTPlayerStatus = 1;
     YTPlayerIsReady = true;
-    videoTitle.textContent = 'Now Playing: ' + YTPlayer.getVideoData().title.substring(0, 40);
+    videoTitle.textContent = YTPlayer.getVideoData().title.substring(0, 40);
     sendVideoProgress();
 }
 
@@ -266,7 +267,7 @@ function stopVideo() {
         // Listen for force sync
         socket.on('host_youtube_video_progress', function (payload) {
             console.log('Force sync recieved at ' + payload.time + ' status: ' + payload.status);
-            hostId.textContent = 'current host: '+ payload.hostId;
+            hostId.textContent = 'current host: ' + payload.hostId;
             if (!YTPlayerIsReady) {
                 return;
             }
@@ -391,15 +392,15 @@ function stopVideo() {
         });
 
         // Delete player
-        socket.on('user_3d_left', function(payload){
-            if(payload.id != socket.id){
+        socket.on('user_3d_left', function (payload) {
+            if (payload.id != socket.id) {
                 deletePlayer(payload.id);
             }
         });
 
         // Throw ball
-        socket.on('user_3d_throw_ball', function(payload){
-            if(payload.id != socket.id){
+        socket.on('user_3d_throw_ball', function (payload) {
+            if (payload.id != socket.id) {
                 throwBall(payload.position, payload.shootDirection);
             }
         });
