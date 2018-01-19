@@ -140,19 +140,18 @@ input[type="text"]{
     border-color: #bbb;
     width: 200px;
     position: absolute;
+    top: 35px;
 }
 .video-users{
     height: 100px;
     overflow-x:hidden;
     right: 0;
-    top: 35px;
 }
 
 .video-playlist{
     text-align: center;
     height: 100px;
-    bottom: 0;
-    right: 0;
+    right: 200px;
     position: absolute;
 }
 
@@ -161,7 +160,7 @@ input[type="text"]{
     -webkit-text-fill-color: white;
     top: 0px;
     right: 0px;
-    width: 300px;
+    width: 325px;
     position: absolute;
     z-index: 3;
     background: rgba(0, 0, 0, 0.589);
@@ -183,7 +182,7 @@ input[type="text"]{
 }
 #video-button-video-status{
     top: 0;
-    right: 300px;
+    right: 325px;
 }
 
 #video-button-video-status{
