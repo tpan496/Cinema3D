@@ -294,12 +294,11 @@ var ballShape = new CANNON.Sphere(0.2);
 var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
 var shootDirection = new THREE.Vector3();
 var shootVelo = 50;
-var projector = new THREE.Projector();
 var ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 function getShootDir(targetVec) {
     var vector = targetVec;
     targetVec.set(0, 0, 1);
-    projector.unprojectVector(vector, camera);
+    vector.unproject(camera);
     var ray = new THREE.Ray(playerBody.position, vector.sub(playerBody.position).normalize());
     targetVec.copy(ray.direction);
 }
