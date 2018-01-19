@@ -290,11 +290,21 @@ function animate() {
 }
 
 // Shooting balls (or perhaps other things)!
+var points = [];
+for ( var deg = 0; deg <= 180; deg += 6 ) {
+
+    var rad = Math.PI * deg / 180;
+    var point = new THREE.Vector2( ( 0.72 + .08 * Math.cos( rad ) ) * Math.sin( rad ), - Math.cos( rad ) ); // the "egg equation"
+    //console.log( point ); // x-coord should be greater than zero to avoid degenerate triangles; it is not in this formula.
+    points.push( point );
+
+}
+
 var ballShape = new CANNON.Sphere(0.2);
-var ballGeometry = new THREE.SphereGeometry(ballShape.radius, 32, 32);
+var ballGeometry = new THREE.LatheBufferGeometry(points, 32);
 var shootDirection = new THREE.Vector3();
 var shootVelo = 50;
-var ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+var ballMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 function getShootDir(targetVec) {
     var vector = targetVec;
     targetVec.set(0, 0, 1);
@@ -312,6 +322,7 @@ window.addEventListener("click", function (e) {
         var ballBody = new CANNON.Body({ mass: 1 });
         ballBody.addShape(ballShape);
         var ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
+        ballMesh.scale.set(0.25,0.25,0.25);
         world.add(ballBody);
         scene.add(ballMesh);
         ballMesh.castShadow = true;
@@ -349,6 +360,7 @@ function throwBall(position, direction) {
     var ballBody = new CANNON.Body({ mass: 1 });
     ballBody.addShape(ballShape);
     var ballMesh = new THREE.Mesh(ballGeometry, material);
+    ballMesh.scale.set(0.25,0.25,0.25);
     world.add(ballBody);
     scene.add(ballMesh);
     ballMesh.castShadow = true;
