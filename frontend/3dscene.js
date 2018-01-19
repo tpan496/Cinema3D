@@ -140,7 +140,6 @@ function initCannon() {
 function init() {
 
     var onKeyDown = function (event) {
-        console.log(document.activeElement);
         if (document.activeElement.className == 'main') {
             // Ask the browser to lock the pointer
             element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
